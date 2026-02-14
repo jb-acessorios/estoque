@@ -60,7 +60,8 @@
       </button>
 
       <button class="iconbtn" data-view="cadastros" type="button">
-        <img class="menu-ico" src="assets/images/cadastros.png" alt="Cadastros">
+        <!-- você falou que é cadastro.png -->
+        <img class="menu-ico" src="assets/images/cadastro.png" alt="Cadastros">
         <span>Cadastros</span>
       </button>
 
@@ -97,6 +98,7 @@
           <div class="filters">
             <div class="field">
               <label>Peças</label>
+              <!-- mantive o id f_sku para compatibilidade -->
               <input id="f_sku" placeholder="Filtrar por peça"/>
             </div>
             <div class="field">
@@ -149,8 +151,12 @@
           </div>
 
           <div class="form-grid">
+            <!-- ID oculto (chave única do registro) -->
+            <input id="p_id" type="hidden" />
+
             <div class="field wide">
               <label>Peças (manual)</label>
+              <!-- mantive p_sku para compatibilidade com seu JS -->
               <input id="p_sku" placeholder="EX: CAPINHA-IPHONE"/>
             </div>
 
@@ -237,6 +243,9 @@
           </div>
 
           <div class="form-grid">
+            <!-- ID oculto do item selecionado (movimenta por ID) -->
+            <input id="m_id" type="hidden" />
+
             <div class="field">
               <label>Tipo</label>
               <select id="m_tipo">
@@ -248,6 +257,7 @@
 
             <div class="field">
               <label>Peça</label>
+              <!-- mantive m_sku para compatibilidade -->
               <input id="m_sku" placeholder="Código da peça"/>
             </div>
 
@@ -279,6 +289,7 @@
                   <th>Data</th>
                   <th>Tipo</th>
                   <th>Peça</th>
+                  <th>ID</th>
                   <th>Qtd</th>
                   <th>Obs</th>
                   <th>Usuário</th>
