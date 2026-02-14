@@ -8,17 +8,21 @@
 </head>
 <body>
   <header class="top">
-    <div>
-      <h1>JB ACESSÓRIOS</h1>
-      <p class="sub">Controle de Estoque + Assistência (MVP)</p>
+    <div class="brand">
+      <img src="assets/images/logo-jb.jpg" alt="JB ACESSÓRIOS">
+      <div>
+        <h1>JB ACESSÓRIOS</h1>
+        <p class="sub">Controle de Estoque (SKU manual) • Tema da Logo</p>
+      </div>
     </div>
     <div class="status" id="status">offline</div>
   </header>
 
   <main class="grid">
+
     <section class="card">
-      <h2>Login (MVP)</h2>
-      <p class="muted">Senha simples só pra não ficar “aberto”. Depois a gente coloca login de verdade.</p>
+      <h2>Acesso (MVP)</h2>
+      <p class="muted">Digite a senha da API (a mesma do Apps Script).</p>
       <label>Senha</label>
       <input id="token" type="password" placeholder="ex: JB123" />
       <button id="btnLogin">Entrar</button>
@@ -27,14 +31,28 @@
     <section class="card">
       <h2>Produtos</h2>
       <div class="row">
-        <input id="search" placeholder="Buscar por nome, SKU, categoria..." />
+        <input id="search" placeholder="Buscar por SKU, nome, categoria..." />
         <button id="btnReload">Recarregar</button>
       </div>
+
+      <p class="muted">
+        Clique em um produto para preencher o formulário de edição.
+        <br>Cor: <span class="low">baixo</span> | <span class="bad">zerado</span>
+      </p>
+
       <div class="tableWrap">
         <table id="tbl">
           <thead>
             <tr>
-              <th>SKU</th><th>Nome</th><th>Categoria</th><th>Estoque</th><th>Mín.</th><th>Preço</th>
+              <th>SKU</th>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Marca</th>
+              <th>Estoque</th>
+              <th>Mín.</th>
+              <th>Preço</th>
+              <th>Local</th>
+              <th>Ativo</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -45,21 +63,23 @@
     <section class="card">
       <h2>Cadastrar / Atualizar Produto</h2>
       <div class="form">
-        <input id="p_sku" placeholder="SKU (obrigatório)" />
+        <input id="p_sku" placeholder="SKU (obrigatório) - sempre MAIÚSCULO" />
         <input id="p_nome" placeholder="Nome" />
-        <input id="p_categoria" placeholder="Categoria (celular, brinquedo...)" />
+        <input id="p_categoria" placeholder="Categoria (CABO, CAPA, FONE...)" />
         <input id="p_marca" placeholder="Marca" />
-        <input id="p_custo" placeholder="Custo" />
-        <input id="p_preco" placeholder="Preço" />
-        <input id="p_estoque" placeholder="Estoque" />
-        <input id="p_minimo" placeholder="Mínimo" />
-        <input id="p_local" placeholder="Local (prateleira, vitrine...)" />
+        <input id="p_custo" placeholder="Custo (ex: 12,50)" />
+        <input id="p_preco" placeholder="Preço (ex: 29,90)" />
+        <input id="p_estoque" placeholder="Estoque (ex: 20)" />
+        <input id="p_minimo" placeholder="Mínimo (ex: 5)" />
+        <input id="p_local" placeholder="Local (ex: Prateleira A1)" />
         <select id="p_ativo">
-          <option value="SIM">Ativo</option>
-          <option value="NAO">Inativo</option>
+          <option value="SIM">SIM</option>
+          <option value="NAO">NÃO</option>
         </select>
+
         <button id="btnSaveProduct">Salvar produto</button>
       </div>
+      <p class="muted">Dica: SKU manual exemplo: <b>CABO-UGREEN-USBC-1M-V01</b></p>
     </section>
 
     <section class="card">
@@ -70,13 +90,15 @@
           <option>SAIDA</option>
           <option>AJUSTE</option>
         </select>
-        <input id="m_sku" placeholder="SKU" />
+
+        <input id="m_sku" placeholder="SKU (ex: CABO-UGREEN-USBC-1M-V01)" />
         <input id="m_qtd" placeholder="Quantidade (AJUSTE = novo estoque)" />
-        <input id="m_obs" placeholder="Obs (ex: venda balcão, assistência...)" />
+        <input id="m_obs" placeholder="Obs (ex: venda balcão / assistência)" />
         <input id="m_usuario" placeholder="Usuário (ex: Luziano)" />
+
         <button id="btnMove">Registrar movimento</button>
       </div>
-      <p class="muted">Dica: “AJUSTE” define o estoque para o número informado.</p>
+      <p class="muted">ENTRADA soma, SAÍDA subtrai, AJUSTE define o estoque final.</p>
     </section>
 
     <section class="card">
@@ -85,17 +107,24 @@
         <input id="movLimit" value="50" />
         <button id="btnLoadMoves">Carregar</button>
       </div>
+
       <div class="tableWrap">
         <table id="tblMoves">
           <thead>
             <tr>
-              <th>Data</th><th>Tipo</th><th>SKU</th><th>Qtd</th><th>Obs</th><th>Usuário</th>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>SKU</th>
+              <th>Qtd</th>
+              <th>Obs</th>
+              <th>Usuário</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
+
   </main>
 
   <footer class="foot">JB ACESSÓRIOS • Estoque</footer>
@@ -103,4 +132,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
