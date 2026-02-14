@@ -10,7 +10,7 @@
 // 3) Excluir no ESTOQUE + linha selecionada destacada
 // ==========================================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzRcfn0x1Zx1WeBidlX6pDgWBK_ZB5achzInLFRyrj0p9Bs8-CuyMH8Bo4bgBgYXwL9/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzFZIQL0MJCcQcCAqOayNuGIi00N1TqHt8yJkib7Oe6pTbJu3lduNnmc8itWsszcuQ/exec";
 
 let TOKEN = "";
 let PRODUCTS = [];
