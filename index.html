@@ -1,1 +1,106 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>JB ACESSÓRIOS | Estoque</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>JB ACESSÓRIOS</h1>
+      <p class="sub">Controle de Estoque + Assistência (MVP)</p>
+    </div>
+    <div class="status" id="status">offline</div>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>Login (MVP)</h2>
+      <p class="muted">Senha simples só pra não ficar “aberto”. Depois a gente coloca login de verdade.</p>
+      <label>Senha</label>
+      <input id="token" type="password" placeholder="ex: JB123" />
+      <button id="btnLogin">Entrar</button>
+    </section>
+
+    <section class="card">
+      <h2>Produtos</h2>
+      <div class="row">
+        <input id="search" placeholder="Buscar por nome, SKU, categoria..." />
+        <button id="btnReload">Recarregar</button>
+      </div>
+      <div class="tableWrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>SKU</th><th>Nome</th><th>Categoria</th><th>Estoque</th><th>Mín.</th><th>Preço</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Cadastrar / Atualizar Produto</h2>
+      <div class="form">
+        <input id="p_sku" placeholder="SKU (obrigatório)" />
+        <input id="p_nome" placeholder="Nome" />
+        <input id="p_categoria" placeholder="Categoria (celular, brinquedo...)" />
+        <input id="p_marca" placeholder="Marca" />
+        <input id="p_custo" placeholder="Custo" />
+        <input id="p_preco" placeholder="Preço" />
+        <input id="p_estoque" placeholder="Estoque" />
+        <input id="p_minimo" placeholder="Mínimo" />
+        <input id="p_local" placeholder="Local (prateleira, vitrine...)" />
+        <select id="p_ativo">
+          <option value="SIM">Ativo</option>
+          <option value="NAO">Inativo</option>
+        </select>
+        <button id="btnSaveProduct">Salvar produto</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Movimentar Estoque</h2>
+      <div class="form">
+        <select id="m_tipo">
+          <option>ENTRADA</option>
+          <option>SAIDA</option>
+          <option>AJUSTE</option>
+        </select>
+        <input id="m_sku" placeholder="SKU" />
+        <input id="m_qtd" placeholder="Quantidade (AJUSTE = novo estoque)" />
+        <input id="m_obs" placeholder="Obs (ex: venda balcão, assistência...)" />
+        <input id="m_usuario" placeholder="Usuário (ex: Luziano)" />
+        <button id="btnMove">Registrar movimento</button>
+      </div>
+      <p class="muted">Dica: “AJUSTE” define o estoque para o número informado.</p>
+    </section>
+
+    <section class="card">
+      <h2>Últimos movimentos</h2>
+      <div class="row">
+        <input id="movLimit" value="50" />
+        <button id="btnLoadMoves">Carregar</button>
+      </div>
+      <div class="tableWrap">
+        <table id="tblMoves">
+          <thead>
+            <tr>
+              <th>Data</th><th>Tipo</th><th>SKU</th><th>Qtd</th><th>Obs</th><th>Usuário</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">JB ACESSÓRIOS • Estoque</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
 
