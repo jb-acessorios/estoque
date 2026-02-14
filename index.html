@@ -8,9 +8,9 @@
 </head>
 <body>
 
-  <!-- TOP BAR (estilo sistema) -->
+  <!-- Topo -->
   <header class="topbar">
-    <div class="topbar-left">
+    <div class="topbar-row">
       <div class="brand">
         <img class="brand-logo" src="assets/images/logo-jb.jpg" alt="JB" onerror="this.style.display='none'">
         <div class="brand-text">
@@ -21,51 +21,46 @@
 
       <div class="auth">
         <input id="token" type="password" placeholder="Senha" />
-        <button id="btnLogin">Entrar</button>
+        <button id="btnLogin" class="btn primary">Entrar</button>
         <span id="status" class="pill">offline</span>
       </div>
     </div>
 
-    <!-- ICON MENU -->
+    <!-- Menu por ícones -->
     <nav class="iconbar">
       <button class="iconbtn active" data-view="estoque" title="Estoque">
-        <span class="ico">📦</span>
-        <span class="txt">Estoque</span>
+        <span class="ico">📦</span><span class="txt">Estoque</span>
       </button>
 
       <button class="iconbtn" data-view="cadastros" title="Cadastros">
-        <span class="ico">📝</span>
-        <span class="txt">Cadastros</span>
+        <span class="ico">📝</span><span class="txt">Cadastros</span>
       </button>
 
       <button class="iconbtn" data-view="movimentacoes" title="Movimentações">
-        <span class="ico">🔁</span>
-        <span class="txt">Movimentações</span>
+        <span class="ico">🔁</span><span class="txt">Movimentações</span>
       </button>
 
       <button class="iconbtn" data-view="relatorios" title="Relatórios">
-        <span class="ico">📊</span>
-        <span class="txt">Relatórios</span>
+        <span class="ico">📊</span><span class="txt">Relatórios</span>
       </button>
     </nav>
   </header>
 
-  <!-- SUBBAR -->
+  <!-- Sub-barra -->
   <div class="subbar">
     <div class="subbar-title" id="viewTitle">Controle de estoque</div>
     <div class="subbar-actions">
-      <button id="btnRefreshAll">Atualizar</button>
+      <button id="btnRefreshAll" class="btn">Atualizar</button>
     </div>
   </div>
 
   <main class="app">
 
-    <!-- ==========================
-         VIEW: ESTOQUE (tela principal)
-    =========================== -->
+    <!-- =======================
+         VIEW: ESTOQUE
+    ======================== -->
     <section class="view active" id="view-estoque">
 
-      <!-- filtros (estilo referência) -->
       <div class="filters">
         <div class="field">
           <label>Código (SKU)</label>
@@ -82,19 +77,19 @@
           <input id="f_categoria" placeholder="Ex: CABO / CAPA / FONE" />
         </div>
 
-        <div class="field field-actions">
+        <div class="field actions">
           <label>&nbsp;</label>
-          <button id="btnFiltrar" class="primary">Pesquisar</button>
-          <button id="btnLimparFiltro">Limpar</button>
+          <button id="btnFiltrar" class="btn primary">Pesquisar</button>
+          <button id="btnLimparFiltro" class="btn">Limpar</button>
         </div>
       </div>
 
-      <!-- grade superior: produtos -->
       <section class="panel">
         <div class="panel-head">
           <div class="panel-title">Produtos</div>
           <div class="panel-buttons">
-            <button id="btnItensEmFalta">Itens em falta</button>
+            <button id="btnItensEmFalta" class="btn">Itens em falta</button>
+            <button id="btnVerTodos" class="btn">Ver todos</button>
           </div>
         </div>
 
@@ -107,6 +102,7 @@
                 <th>Categoria</th>
                 <th>Marca</th>
                 <th>Atual</th>
+                <th>Mín.</th>
                 <th>Preço</th>
                 <th>Local</th>
                 <th>Ativo</th>
@@ -117,12 +113,11 @@
         </div>
 
         <div class="hint">
-          Clique no produto para ver movimentos e preencher o SKU nas movimentações.
+          Clique em um produto para selecionar e carregar os movimentos.
           <span class="low">baixo</span> <span class="bad">zerado</span>
         </div>
       </section>
 
-      <!-- grade inferior: movimentos do SKU selecionado -->
       <section class="panel">
         <div class="panel-head">
           <div class="panel-title">
@@ -130,7 +125,7 @@
           </div>
           <div class="panel-buttons">
             <input id="movLimit" value="50" class="small" />
-            <button id="btnLoadMoves">Carregar</button>
+            <button id="btnLoadMoves" class="btn">Carregar</button>
           </div>
         </div>
 
@@ -153,15 +148,15 @@
 
     </section>
 
-    <!-- ==========================
+    <!-- =======================
          VIEW: CADASTROS
-    =========================== -->
+    ======================== -->
     <section class="view" id="view-cadastros">
       <section class="panel">
         <div class="panel-head">
           <div class="panel-title">Cadastro de Produto</div>
           <div class="panel-buttons">
-            <button id="btnNovoProduto">Novo</button>
+            <button id="btnNovoProduto" class="btn">Novo</button>
           </div>
         </div>
 
@@ -213,21 +208,19 @@
             </select>
           </div>
 
-          <div class="field field-actions wide">
-            <button id="btnSalvarProduto" class="primary">Salvar</button>
-            <button id="btnLimparProduto">Limpar</button>
+          <div class="field wide actions">
+            <button id="btnSalvarProduto" class="btn primary">Salvar</button>
+            <button id="btnLimparProduto" class="btn">Limpar</button>
           </div>
         </div>
 
-        <div class="hint">
-          SKU sempre em MAIÚSCULO (o sistema força automaticamente).
-        </div>
+        <div class="hint">SKU é forçado para MAIÚSCULO automaticamente.</div>
       </section>
     </section>
 
-    <!-- ==========================
+    <!-- =======================
          VIEW: MOVIMENTAÇÕES
-    =========================== -->
+    ======================== -->
     <section class="view" id="view-movimentacoes">
       <section class="panel">
         <div class="panel-head">
@@ -264,38 +257,31 @@
             <input id="m_obs" placeholder="Ex: Venda balcão / Compra fornecedor / Assistência" />
           </div>
 
-          <div class="field field-actions wide">
-            <button id="btnRegistrarMov" class="primary">Registrar</button>
-            <button id="btnLimparMov">Limpar</button>
+          <div class="field wide actions">
+            <button id="btnRegistrarMov" class="btn primary">Registrar</button>
+            <button id="btnLimparMov" class="btn">Limpar</button>
           </div>
         </div>
+
+        <div class="hint">ENTRADA soma • SAÍDA subtrai • AJUSTE define o estoque final.</div>
       </section>
     </section>
 
-    <!-- ==========================
-         VIEW: RELATÓRIOS (básico)
-    =========================== -->
+    <!-- =======================
+         VIEW: RELATÓRIOS
+    ======================== -->
     <section class="view" id="view-relatorios">
       <section class="panel">
         <div class="panel-head">
           <div class="panel-title">Relatórios</div>
-        </div>
-
-        <div class="report-cards">
-          <div class="report">
-            <div class="report-title">Itens abaixo do mínimo</div>
-            <div class="report-desc">Lista produtos com estoque menor ou igual ao mínimo.</div>
-            <button id="btnRelMinimo" class="primary">Gerar</button>
-          </div>
-
-          <div class="report">
-            <div class="report-title">Itens zerados</div>
-            <div class="report-desc">Lista produtos com estoque igual a 0.</div>
-            <button id="btnRelZerados">Gerar</button>
+          <div class="panel-buttons">
+            <button id="btnRelMinimo" class="btn primary">Abaixo do mínimo</button>
+            <button id="btnRelZerados" class="btn">Zerados</button>
+            <button id="btnRelLimpar" class="btn">Limpar</button>
           </div>
         </div>
 
-        <div class="gridwrap" style="margin-top:12px;">
+        <div class="gridwrap">
           <table id="tblRel">
             <thead>
               <tr>
@@ -305,6 +291,8 @@
             <tbody></tbody>
           </table>
         </div>
+
+        <div class="hint">Relatórios usam os dados carregados do estoque.</div>
       </section>
     </section>
 
