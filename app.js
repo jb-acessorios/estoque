@@ -1,6 +1,6 @@
 // ==========================================
 // JB ACESSÓRIOS - Front (GitHub Pages)
-// Funções: menu superior, filtros, cadastros, movimentações, relatórios
+// Tela de login inicial + sistema após login
 // Backend: Google Apps Script (Web App)
 // ==========================================
 
@@ -16,6 +16,17 @@ let selectedSku = "";
 const $ = (id) => document.getElementById(id);
 const skuUp = (s) => String(s || "").trim().toUpperCase();
 const norm  = (s) => String(s || "").toLowerCase().trim();
+
+function saveTokenSession(token){ sessionStorage.setItem("jb_token", token); }
+function loadTokenSession(){ return sessionStorage.getItem("jb_token") || ""; }
+function clearTokenSession(){ sessionStorage.removeItem("jb_token"); }
+
+function showOnly(view){
+  // view: "login" ou "app"
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  const el = document.getElementById(`view-${view}`);
+  if (el) el.classList.add("active");
+}
 
 function setStatus(ok, text) {
   const el = $("status");
@@ -44,16 +55,13 @@ async function apiGet(action, params = {}) {
 async function apiPost(payload) {
   const r = await fetch(API_URL, {
     method: "POST",
-    // NÃO coloque headers aqui (isso evita o preflight/CORS)
+    // sem headers para evitar preflight/CORS
     body: JSON.stringify({ ...payload, token: TOKEN }),
   });
 
   const txt = await r.text();
-  try {
-    return JSON.parse(txt);
-  } catch {
-    throw new Error("Resposta não-JSON da API (verifique o Web App do Apps Script).");
-  }
+  try { return JSON.parse(txt); }
+  catch { throw new Error("Resposta não-JSON da API (verifique o Web App do Apps Script)."); }
 }
 
 // =====================
@@ -64,7 +72,7 @@ function setView(view) {
     btn.classList.toggle("active", btn.dataset.view === view);
   });
 
-  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".view2").forEach(v => v.classList.remove("active"));
   const el = document.getElementById(`view-${view}`);
   if (el) el.classList.add("active");
 
@@ -108,7 +116,6 @@ function renderProducts(list) {
     if (est <= min) tr.classList.add("low");
     if (est <= 0) tr.classList.add("bad");
 
-    // ORDEM: SKU | Nome | Categoria | Marca | Estado | Atual | Mín | Preço | Local | Ativo
     tr.innerHTML = `
       <td>${p.sku ?? ""}</td>
       <td>${p.nome ?? ""}</td>
@@ -127,13 +134,9 @@ function renderProducts(list) {
       const s = $("selectedSku");
       if (s) s.textContent = selectedSku || "---";
 
-      // SKU na tela de movimentações
       if ($("m_sku")) $("m_sku").value = selectedSku;
 
-      // Preenche no cadastro (pra editar rápido)
       fillProductForm(p);
-
-      // Movimentos filtrados
       renderMovesFiltered();
     });
 
@@ -204,10 +207,7 @@ function fillProductForm(p){
   if ($("p_nome")) $("p_nome").value = p.nome || "";
   if ($("p_categoria")) $("p_categoria").value = p.categoria || "";
   if ($("p_marca")) $("p_marca").value = p.marca || "";
-
-  // NOVO: estado
   if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
-
   if ($("p_custo")) $("p_custo").value = p.custo || "";
   if ($("p_preco")) $("p_preco").value = p.preco || "";
   if ($("p_estoque")) $("p_estoque").value = p.estoque || "";
@@ -230,10 +230,7 @@ async function saveProduct(){
     nome: ($("p_nome")?.value || "").trim(),
     categoria: ($("p_categoria")?.value || "").trim(),
     marca: ($("p_marca")?.value || "").trim(),
-
-    // estado tem que ir antes de custo/...
     estado: ($("p_estado")?.value || "NOVA").toUpperCase(),
-
     custo: ($("p_custo")?.value || "").trim(),
     preco: ($("p_preco")?.value || "").trim(),
     estoque: ($("p_estoque")?.value || "").trim(),
@@ -294,8 +291,6 @@ function renderRel(list){
 
   list.forEach(p => {
     const tr = document.createElement("tr");
-
-    // ORDEM: SKU | Nome | Categoria | Estado | Estoque | Mín | Preço | Local
     tr.innerHTML = `
       <td>${p.sku ?? ""}</td>
       <td>${p.nome ?? ""}</td>
@@ -354,31 +349,80 @@ async function refreshAll(){
 }
 
 // =====================
+// LOGIN (TELA INICIAL)
+// =====================
+async function doLoginFromPage(){
+  const input = $("login_password");
+  const msg = $("login_msg");
+
+  const token = (input?.value || "").trim();
+  if (!token) {
+    if (msg) msg.textContent = "Digite a senha.";
+    return;
+  }
+
+  TOKEN = token;
+  if (msg) msg.textContent = "Verificando...";
+
+  try{
+    const ok = await ping();
+    if (!ok) {
+      if (msg) msg.textContent = "Senha inválida.";
+      TOKEN = "";
+      return;
+    }
+
+    saveTokenSession(TOKEN);
+
+    showOnly("app");
+    await refreshAll();
+    setView("estoque");
+
+  } catch(err){
+    TOKEN = "";
+    clearTokenSession();
+    if (msg) msg.textContent = "Erro ao conectar.";
+    alert(err.message || String(err));
+  }
+}
+
+function doLogout(){
+  TOKEN = "";
+  PRODUCTS = [];
+  MOVES_ALL = [];
+  selectedSku = "";
+  clearTokenSession();
+
+  // limpa telas
+  renderProducts([]);
+  renderMoves([]);
+  renderRel([]);
+  clearProductForm();
+
+  showOnly("login");
+  const msg = $("login_msg");
+  if (msg) msg.textContent = "Digite a senha para acessar.";
+  if ($("login_password")) $("login_password").value = "";
+}
+
+// =====================
 // EVENTOS
 // =====================
 function wireActions(){
-  $("btnLogin")?.addEventListener("click", async () => {
-    TOKEN = ($("token")?.value || "").trim();
-    if (!TOKEN) return alert("Digite a senha.");
-
-    const ok = await ping();
-    if (!ok) return alert("Senha inválida ou API offline.");
-
-    try{
-      await refreshAll();
-      setView("estoque");
-    }catch(err){
-      alert(err.message || String(err));
-    }
+  $("btnLoginPage")?.addEventListener("click", doLoginFromPage);
+  $("login_password")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doLoginFromPage();
   });
 
+  $("btnLogout")?.addEventListener("click", doLogout);
+
   $("btnRefreshAll")?.addEventListener("click", async () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     try{ await refreshAll(); } catch(e){ alert(e.message || String(e)); }
   });
 
   $("btnFiltrar")?.addEventListener("click", () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     applyFilters();
   });
 
@@ -387,7 +431,7 @@ function wireActions(){
   });
 
   $("btnItensEmFalta")?.addEventListener("click", () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     const list = PRODUCTS.filter(p => Number(p.estoque||0) <= Number(p.minimo||0));
     renderProducts(list);
   });
@@ -397,12 +441,12 @@ function wireActions(){
   });
 
   $("btnLoadMoves")?.addEventListener("click", async () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     try{ await loadMoves(); } catch(e){ alert(e.message || String(e)); }
   });
 
   $("btnSalvarProduto")?.addEventListener("click", async () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     try{ await saveProduct(); } catch(e){ alert(e.message || String(e)); }
   });
 
@@ -414,7 +458,7 @@ function wireActions(){
   });
 
   $("btnRegistrarMov")?.addEventListener("click", async () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     try{ await moveStock(); } catch(e){ alert(e.message || String(e)); }
   });
 
@@ -427,12 +471,12 @@ function wireActions(){
   });
 
   $("btnRelMinimo")?.addEventListener("click", () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     relMinimo();
   });
 
   $("btnRelZerados")?.addEventListener("click", () => {
-    if (!TOKEN) return alert("Entre primeiro.");
+    if (!TOKEN) return;
     relZerados();
   });
 
@@ -444,4 +488,20 @@ function wireActions(){
 // Init
 wireMenu();
 wireActions();
-setView("estoque");
+
+// tenta auto-login
+TOKEN = loadTokenSession();
+if (TOKEN) {
+  // mostra app e valida token
+  showOnly("app");
+  ping().then(async (ok) => {
+    if (ok) {
+      await refreshAll();
+      setView("estoque");
+    } else {
+      doLogout();
+    }
+  }).catch(() => doLogout());
+} else {
+  showOnly("login");
+}
