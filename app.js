@@ -2,7 +2,7 @@
 // JB ACESSÓRIOS - Front (GitHub Pages)
 // Login + sistema
 // Backend: Google Apps Script (Web App)
-// AGORA: suporte a PEÇA (SKU) repetida usando ID único
+// Suporte a PEÇA repetida usando ID único
 // ==========================================
 
 // COLE A URL DO SEU WEB APP AQUI:
@@ -118,7 +118,6 @@ function renderProducts(list) {
     if (est <= min) tr.classList.add("low");
     if (est <= 0) tr.classList.add("bad");
 
-    // Compatibilidade: API pode mandar "peca" (novo) ou "sku" (antigo)
     const peca = (p.peca ?? p.sku ?? "");
     const id = (p.id ?? "");
 
@@ -141,15 +140,15 @@ function renderProducts(list) {
       selectedPeca = up(peca);
 
       // Mostra seleção (agora por ID)
-      const s = $("selectedSku"); // você pode renomear depois, mas mantive o ID do HTML
+      const s = $("selectedSku");
       if (s) s.textContent = selectedPeca ? `${selectedPeca} (${selectedId})` : "---";
 
-      // Preenche movimentação
+      // Preenche movimentação (ID é o principal!)
       if ($("m_id")) $("m_id").value = selectedId;
-      if ($("m_sku")) $("m_sku").value = selectedPeca;     // mantém compatível com seu HTML atual
-      if ($("m_peca")) $("m_peca").value = selectedPeca;   // se existir
+      if ($("m_sku")) $("m_sku").value = selectedPeca;
+      if ($("m_peca")) $("m_peca").value = selectedPeca;
 
-      // Preenche cadastro
+      // Preenche cadastro (vai carregar p_id pra editar este registro)
       fillProductForm(p);
 
       // Filtra movimentos do item (por ID)
@@ -164,7 +163,6 @@ function renderProducts(list) {
 // FILTROS
 // =====================
 function applyFilters() {
-  // Compat: seu HTML pode ter f_sku ainda
   const fpeca = up(($("f_peca")?.value ?? $("f_sku")?.value) || "");
   const fnome = norm($("f_nome")?.value);
   const fcat  = norm($("f_categoria")?.value);
@@ -198,8 +196,6 @@ function renderMoves(list) {
 
   list.forEach(m => {
     const tr = document.createElement("tr");
-
-    // Compat: pode vir "peca/sku" e "id"
     const id = m.id || "";
     const peca = m.peca || m.sku || "";
 
@@ -229,10 +225,10 @@ function fillProductForm(p){
   const peca = (p.peca ?? p.sku ?? "");
   const id = (p.id ?? "");
 
-  // Se você criar um input hidden p_id, ele vai receber o ID para editar corretamente
-  if ($("p_id")) $("p_id").value = id;
+  // ID do registro (edita quando preenchido)
+  if ($("p_id")) $("p_id").value = String(id || "").trim();
 
-  // Compat: seu HTML pode estar p_sku ainda
+  // campo peça (compat)
   if ($("p_peca")) $("p_peca").value = peca || "";
   if ($("p_sku")) $("p_sku").value = peca || "";
 
@@ -250,7 +246,7 @@ function fillProductForm(p){
 }
 
 function clearProductForm(){
-  // limpa ID de edição
+  // zera ID = modo criar novo
   if ($("p_id")) $("p_id").value = "";
 
   ["p_peca","p_sku","p_nome","p_categoria","p_marca","p_modelo","p_custo","p_preco","p_estoque","p_minimo","p_local"]
@@ -263,10 +259,11 @@ function clearProductForm(){
 async function saveProduct(){
   const pecaValue = up(($("p_peca")?.value ?? $("p_sku")?.value) || "");
   const idValue = String($("p_id")?.value || "").trim(); // se existir, edita; se vazio, cria novo
+  const wasCreating = !idValue;
 
   const product = {
-    id: idValue || "",         // <--- CHAVE (se vazio, cria um novo)
-    peca: pecaValue,           // <--- pode repetir
+    id: idValue || "", // se vazio -> CRIA NOVO
+    peca: pecaValue,
     nome: ($("p_nome")?.value || "").trim(),
     categoria: ($("p_categoria")?.value || "").trim(),
     marca: ($("p_marca")?.value || "").trim(),
@@ -287,8 +284,13 @@ async function saveProduct(){
 
   alert(r.message);
 
-  // Depois de salvar, se a API retornar id, guarda no form (pra edits seguintes)
-  if (r.id && $("p_id")) $("p_id").value = String(r.id);
+  // Se estava criando, NÃO mantém o p_id preenchido (pra não sobrescrever no próximo salvar)
+  if (wasCreating) {
+    if ($("p_id")) $("p_id").value = "";
+  } else {
+    // se estava editando, mantém o ID
+    if (r.id && $("p_id")) $("p_id").value = String(r.id);
+  }
 
   await refreshAll();
   setView("estoque");
@@ -299,13 +301,12 @@ async function saveProduct(){
 // =====================
 async function moveStock(){
   const idFromForm = String($("m_id")?.value || "").trim();
-
   const pecaFromForm = up(($("m_peca")?.value ?? $("m_sku")?.value) || "");
 
   const move = {
     tipo: $("m_tipo")?.value,
-    id: idFromForm || selectedId,      // <--- usa ID SEMPRE
-    peca: pecaFromForm || selectedPeca, // só pra registro/visual
+    id: idFromForm || selectedId,             // ID sempre manda
+    peca: pecaFromForm || selectedPeca,       // só para log/visual
     quantidade: ($("m_qtd")?.value || "").trim(),
     obs: ($("m_obs")?.value || "").trim(),
     usuario: ($("m_usuario")?.value || "").trim() || "JB"
@@ -394,8 +395,6 @@ async function loadMoves(){
   if (!r.ok) throw new Error(r.error);
 
   MOVES_ALL = r.moves || [];
-
-  // mantém filtro do item selecionado
   renderMovesFiltered();
 }
 
@@ -509,8 +508,22 @@ function wireActions(){
 
   $("btnLimparProduto")?.addEventListener("click", clearProductForm);
 
+  // ✅ AJUSTE PRINCIPAL: botão NOVO zera seleção + zera IDs
   $("btnNovoProduto")?.addEventListener("click", () => {
+    // desmarca item selecionado
+    selectedId = "";
+    selectedPeca = "";
+
+    if ($("selectedSku")) $("selectedSku").textContent = "---";
+
+    // limpa cadastro (zera p_id)
     clearProductForm();
+
+    // limpa movimentação (zera m_id)
+    if ($("m_id")) $("m_id").value = "";
+    if ($("m_peca")) $("m_peca").value = "";
+    if ($("m_sku")) $("m_sku").value = "";
+
     ($("p_peca") || $("p_sku"))?.focus();
   });
 
