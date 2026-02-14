@@ -148,7 +148,6 @@
           </div>
 
           <div class="form-grid" autocomplete="off">
-            <!-- ID oculto (chave única do registro) -->
             <input id="p_id" name="p_id" type="hidden" />
 
             <div class="field wide">
@@ -223,7 +222,7 @@
             </div>
           </div>
 
-          <p class="hint">Peça é forçada para MAIÚSCULO automaticamente.</p>
+          <p class="hint" id="cadHint">Clique em NOVO para criar. Para editar, selecione um item na tabela.</p>
         </div>
       </section>
 
@@ -239,7 +238,6 @@
           </div>
 
           <div class="form-grid" autocomplete="off">
-            <!-- ID oculto do item selecionado (movimenta por ID) -->
             <input id="m_id" name="m_id" type="hidden" />
 
             <div class="field">
@@ -251,9 +249,16 @@
               </select>
             </div>
 
+            <!-- NOVO: seleção por lista (ID) -->
+            <div class="field wide">
+              <label>Selecionar peça (por ID)</label>
+              <select id="m_pick"></select>
+            </div>
+
+            <!-- Campo apenas para exibir a peça escolhida -->
             <div class="field">
-              <label>Peça</label>
-              <input id="m_sku" placeholder="Código da peça" autocomplete="off"/>
+              <label>Peça (selecionada)</label>
+              <input id="m_sku" placeholder="Será preenchido ao selecionar" autocomplete="off" readonly/>
             </div>
 
             <div class="field">
