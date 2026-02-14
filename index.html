@@ -13,7 +13,10 @@
     <div class="login-wrap">
       <div class="login-card">
         <div class="login-brand">
-          <div class="login-logo">JB</div>
+          <!-- Logo real (adicione o arquivo em assets/images/logo-jb.png) -->
+          <img class="login-logo-img" src="assets/images/logo-jb.png" alt="JB" onerror="this.style.display='none'">
+          <div class="login-logo-fallback">JB</div>
+
           <div>
             <h1>JB ACESSÓRIOS</h1>
             <p>Controle de Estoque</p>
@@ -39,7 +42,7 @@
         <div class="brand-mark">JB</div>
         <div class="brand-text">
           <div class="brand-title">JB ACESSÓRIOS</div>
-          <div class="brand-sub">Controle de Estoque (básico)</div>
+          <div class="brand-sub">Controle de Estoque</div>
         </div>
       </div>
 
@@ -49,19 +52,26 @@
       </div>
     </header>
 
-    <!-- MENU (BOTÕES SUPERIORES) -->
+    <!-- MENU (BOTÕES SUPERIORES com PNG) -->
     <nav class="menu">
       <button class="iconbtn active" data-view="estoque" type="button">
-        <span class="ico">📦</span> <span>Estoque</span>
+        <img class="menu-ico" src="assets/images/estoque.png" alt="Estoque">
+        <span>Estoque</span>
       </button>
+
       <button class="iconbtn" data-view="cadastros" type="button">
-        <span class="ico">📝</span> <span>Cadastros</span>
+        <img class="menu-ico" src="assets/images/cadastro.png" alt="Cadastros">
+        <span>Cadastros</span>
       </button>
+
       <button class="iconbtn" data-view="movimentacoes" type="button">
-        <span class="ico">🔁</span> <span>Movimentações</span>
+        <img class="menu-ico" src="assets/images/movimentacoes.png" alt="Movimentações">
+        <span>Movimentações</span>
       </button>
+
       <button class="iconbtn" data-view="relatorios" type="button">
-        <span class="ico">📊</span> <span>Relatórios</span>
+        <img class="menu-ico" src="assets/images/relatorios.png" alt="Relatórios">
+        <span>Relatórios</span>
       </button>
     </nav>
 
@@ -86,8 +96,8 @@
 
           <div class="filters">
             <div class="field">
-              <label>SKU</label>
-              <input id="f_sku" placeholder="Filtrar por SKU"/>
+              <label>Peças</label>
+              <input id="f_sku" placeholder="Filtrar por peça"/>
             </div>
             <div class="field">
               <label>Nome</label>
@@ -107,10 +117,11 @@
             <table id="tblProdutos">
               <thead>
                 <tr>
-                  <th>SKU</th>
+                  <th>Peças</th>
                   <th>Descrição</th>
                   <th>Categoria</th>
                   <th>Marca</th>
+                  <th>Modelo</th>
                   <th>Estado</th>
                   <th>Atual</th>
                   <th>Mín.</th>
@@ -123,7 +134,7 @@
             </table>
           </div>
 
-          <p class="hint">Clique em um produto para selecionar e ver movimentos.</p>
+          <p class="hint">Clique em um item para selecionar e ver movimentações.</p>
         </div>
       </section>
 
@@ -139,8 +150,8 @@
 
           <div class="form-grid">
             <div class="field wide">
-              <label>SKU (manual)</label>
-              <input id="p_sku" placeholder="EX: CABO-IPHONE-2M"/>
+              <label>Peças (manual)</label>
+              <input id="p_sku" placeholder="EX: CAPINHA-IPHONE"/>
             </div>
 
             <div class="field wide">
@@ -150,12 +161,17 @@
 
             <div class="field">
               <label>Categoria</label>
-              <input id="p_categoria" placeholder="EX: CABOS"/>
+              <input id="p_categoria" placeholder="EX: CAPA"/>
             </div>
 
             <div class="field">
               <label>Marca</label>
               <input id="p_marca" placeholder="EX: APPLE"/>
+            </div>
+
+            <div class="field">
+              <label>Modelo</label>
+              <input id="p_modelo" placeholder="EX: IPHONE 13 / A14 / etc"/>
             </div>
 
             <div class="field">
@@ -205,7 +221,7 @@
             </div>
           </div>
 
-          <p class="hint">SKU é forçado para MAIÚSCULO automaticamente.</p>
+          <p class="hint">Peças é forçado para MAIÚSCULO automaticamente.</p>
         </div>
       </section>
 
@@ -215,7 +231,7 @@
           <div class="card-head">
             <h3>Movimentações</h3>
             <div class="card-actions">
-              <span class="pill">SKU selecionado: <b id="selectedSku">---</b></span>
+              <span class="pill">Peça selecionada: <b id="selectedSku">---</b></span>
               <button id="btnLoadMoves" class="btn-outline">Carregar</button>
             </div>
           </div>
@@ -231,8 +247,8 @@
             </div>
 
             <div class="field">
-              <label>SKU</label>
-              <input id="m_sku" placeholder="SKU do produto"/>
+              <label>Peça</label>
+              <input id="m_sku" placeholder="Código da peça"/>
             </div>
 
             <div class="field">
@@ -262,7 +278,7 @@
                 <tr>
                   <th>Data</th>
                   <th>Tipo</th>
-                  <th>SKU</th>
+                  <th>Peça</th>
                   <th>Qtd</th>
                   <th>Obs</th>
                   <th>Usuário</th>
@@ -301,9 +317,10 @@
             <table id="tblRel">
               <thead>
                 <tr>
-                  <th>SKU</th>
+                  <th>Peça</th>
                   <th>Nome</th>
                   <th>Categoria</th>
+                  <th>Modelo</th>
                   <th>Estado</th>
                   <th>Estoque</th>
                   <th>Mín.</th>
