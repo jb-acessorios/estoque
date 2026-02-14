@@ -116,6 +116,7 @@ function renderProducts(list) {
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
       <td>${p.marca ?? ""}</td>
+      <td>${p.estado ?? ""}</td>
       <td>${p.estoque ?? 0}</td>
       <td>${p.minimo ?? 0}</td>
       <td>${money(p.preco)}</td>
@@ -132,7 +133,7 @@ function renderProducts(list) {
 
       // preenche no cadastro (pra editar rápido)
       fillProductForm(p);
-
+if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
       // já mostra os movimentos filtrados
       renderMovesFiltered();
     });
@@ -212,6 +213,8 @@ function fillProductForm(p){
 function clearProductForm(){
   ["p_sku","p_nome","p_categoria","p_marca","p_custo","p_preco","p_estoque","p_minimo","p_local"].forEach(id => $(id).value = "");
   $("p_ativo").value = "SIM";
+  if ($("p_estado")) $("p_estado").value = "NOVA";
+
 }
 
 async function saveProduct(){
@@ -219,6 +222,7 @@ async function saveProduct(){
     sku: skuUp($("p_sku").value),
     nome: $("p_nome").value.trim(),
     categoria: $("p_categoria").value.trim(),
+    estado: ($("p_estado")?.value || "NOVA").toUpperCase(),
     marca: $("p_marca").value.trim(),
     custo: $("p_custo").value.trim(),
     preco: $("p_preco").value.trim(),
@@ -281,6 +285,7 @@ function renderRel(list){
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
       <td>${p.estoque ?? 0}</td>
+      <td>${p.estado ?? ""}</td>
       <td>${p.minimo ?? 0}</td>
       <td>${money(p.preco)}</td>
       <td>${p.local ?? ""}</td>
