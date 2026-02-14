@@ -53,6 +53,46 @@ function money(v){
   return n.toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
 }
 
+function toNumBR(v){
+  const s = String(v ?? "").trim();
+  if (!s) return 0;
+  // converte "1.234,56" -> "1234.56"
+  const n = Number(s.replace(/\./g, "").replace(",", "."));
+  return isNaN(n) ? 0 : n;
+}
+
+function renderMiniDash(list){
+  // list = a mesma lista que você está renderizando na tabela (com filtros etc)
+  const items = Array.isArray(list) ? list : [];
+
+  const pecas = items.length;
+
+  let unidades = 0;
+  let custoTotal = 0;
+  let vendaTotal = 0;
+  let emFalta = 0;
+
+  for (const p of items){
+    const est = Number(p.estoque || 0) || 0;
+    const min = Number(p.minimo || 0) || 0;
+
+    const custo = toNumBR(p.custo);
+    const preco = toNumBR(p.preco);
+
+    unidades += est;
+    custoTotal += (custo * est);
+    vendaTotal += (preco * est);
+
+    if (est <= min) emFalta += 1;
+  }
+
+  if ($("dashPecas")) $("dashPecas").textContent = pecas.toLocaleString("pt-BR");
+  if ($("dashUnidades")) $("dashUnidades").textContent = unidades.toLocaleString("pt-BR");
+  if ($("dashCusto")) $("dashCusto").textContent = money(custoTotal);
+  if ($("dashVenda")) $("dashVenda").textContent = money(vendaTotal);
+  if ($("dashFalta")) $("dashFalta").textContent = emFalta.toLocaleString("pt-BR");
+}
+
 function setDeleteButtonsState(){
   const hasSelection = !!selectedId;
   if ($("btnExcluirEstoque")) $("btnExcluirEstoque").disabled = !hasSelection;
