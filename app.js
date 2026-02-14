@@ -5,7 +5,7 @@
 // ==========================================
 
 // COLE A URL DO SEU WEB APP AQUI:
-const API_URL = "https://script.google.com/macros/s/AKfycbx51cpeTeES9rv244ve1CAN1yFNDbANb4Ovyy5hFPpctmNFskSvZrBvtM1jIWkxWWM/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxxT-hSrXK69CwobJLOzoTIu7b1pKk-042dk7KxlhwqSVsapyVx2Ag_J68ZfEM36R2x/exec";
 
 let TOKEN = "";
 let PRODUCTS = [];
@@ -43,10 +43,16 @@ async function apiGet(action, params = {}) {
 async function apiPost(payload) {
   const r = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ ...payload, token: TOKEN })
+    // NÃO coloque headers aqui (isso evita o preflight/CORS)
+    body: JSON.stringify({ ...payload, token: TOKEN }),
   });
-  return r.json();
+
+  const txt = await r.text();
+  try {
+    return JSON.parse(txt);
+  } catch {
+    throw new Error("Resposta não-JSON da API (verifique o Web App do Apps Script).");
+  }
 }
 
 // =====================
