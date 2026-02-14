@@ -459,3 +459,57 @@ tbody tr.bad{ background: rgba(244, 67, 54, .10); }
 #tblProdutos tbody tr.selected:hover > td{
   background: #dbeafe !important;
 }
+
+/* =========================
+   MINI DASHBOARD NO MENU
+   ========================= */
+.menu{
+  justify-content: flex-start; /* mantém botões na esquerda */
+}
+
+.menu-dash{
+  margin-left: auto;              /* joga o dashboard para direita */
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-right: 10px;
+  min-width: 520px;               /* ocupa o “vazio” e evita quebrar feio */
+}
+
+.dashcard{
+  width: 118px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+}
+
+.dashlabel{
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255,255,255,.80);
+  letter-spacing: .2px;
+}
+
+.dashvalue{
+  margin-top: 3px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.20);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* destaque “em falta” */
+.dashcard.warn{
+  background: rgba(255, 193, 7, .16);
+  border-color: rgba(255, 193, 7, .35);
+}
+
+/* responsivo: em telas pequenas, esconde o dashboard */
+@media (max-width: 980px){
+  .menu-dash{ display:none; }
+}
