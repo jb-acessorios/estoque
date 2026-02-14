@@ -395,3 +395,26 @@ tbody tr.bad{ background: rgba(244, 67, 54, .10); }
   font-size: 13px;
   opacity: .85;
 }
+
+/* =========================
+   LINHA SELECIONADA (AZUL CLARO)
+   ========================= */
+
+/* aplica no TD (melhor que no TR, pq alguns temas sobrescrevem o TR) */
+#tblProdutos tbody tr.selected > td{
+  background: #dbeafe !important;  /* azul bem claro */
+  border-top: 1px solid #93c5fd !important;
+  border-bottom: 1px solid #93c5fd !important;
+}
+
+/* opcional: “bordinha” azul na esquerda pra ficar bem visível */
+#tblProdutos tbody tr.selected > td:first-child{
+  box-shadow: inset 4px 0 0 #3b82f6 !important;
+}
+
+/* hover (pra não confundir com o selecionado) */
+#tblProdutos tbody tr:hover > td{
+  background: rgba(59,130,246,0.08);
+  transition: background .12s ease;
+}
+
