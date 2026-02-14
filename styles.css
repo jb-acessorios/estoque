@@ -3,29 +3,37 @@
   --text: #141823;
   --muted: rgba(20,24,35,.65);
   --line: rgba(20,24,35,.12);
-  --card: #ffffff;
+  --card: rgba(255,255,255,.86);
 
-  /* paleta inspirada na sua logo (bronze/dourado suave) */
+  /* bronze/dourado da logo */
   --accent1: #b77a52;
   --accent2: #e6a36e;
 
-  --shadow: 0 10px 30px rgba(20,24,35,.08);
+  --shadow: 0 12px 34px rgba(10,14,24,.10);
   --radius: 18px;
-  --radius2: 14px;
 }
 
 *{ box-sizing: border-box; }
 html, body{ height: 100%; }
+
 body{
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  background: var(--bg);
   color: var(--text);
+  background: radial-gradient(900px 400px at 20% -10%, rgba(230,163,110,.18), transparent 60%),
+              radial-gradient(800px 380px at 90% 10%, rgba(183,122,82,.16), transparent 60%),
+              linear-gradient(#fff, #fff);
 }
 
+/* Views */
 .view{ display:none; }
 .view.active{ display:block; }
 
+/* IMPORTANTÍSSIMO: telas internas individuais */
+.view2{ display:none; }
+.view2.active{ display:block; }
+
+/* Topbar */
 .topbar{
   padding: 16px 18px;
   display:flex;
@@ -33,7 +41,8 @@ body{
   justify-content:space-between;
   gap: 14px;
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(10px);
 }
 
 .brand{
@@ -52,6 +61,7 @@ body{
   color:#fff;
   font-weight: 900;
   background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  box-shadow: 0 12px 26px rgba(183,122,82,.22);
 }
 
 .brand-title{
@@ -69,34 +79,48 @@ body{
   gap: 10px;
 }
 
+/* Menu */
 .menu{
   padding: 14px 18px;
   display:flex;
   gap: 10px;
   flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(10px);
 }
 
 .iconbtn{
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid rgba(20,24,35,.10);
+  background: rgba(255,255,255,.75);
   border-radius: 14px;
   padding: 10px 14px;
   cursor:pointer;
   display:flex;
   align-items:center;
   gap: 10px;
-  min-width: 160px;
+  min-width: 170px;
   justify-content:center;
-  box-shadow: 0 6px 16px rgba(20,24,35,.05);
-  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(10,14,24,.07);
+  font-weight: 900;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 
-.iconbtn .ico{ font-size: 18px; }
+.iconbtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(10,14,24,.10);
+}
+
 .iconbtn.active{
   border-color: rgba(183,122,82,.55);
-  box-shadow: 0 10px 22px rgba(183,122,82,.12);
+  box-shadow: 0 16px 34px rgba(183,122,82,.16);
+}
+
+.menu-ico{
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(183,122,82,.18));
 }
 
 .main{
@@ -120,11 +144,24 @@ body{
 
 .card{
   background: var(--card);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(20,24,35,.10);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 14px;
+  backdrop-filter: blur(10px);
+  position: relative;
 }
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(230,163,110,.10), rgba(183,122,82,.06), transparent 60%);
+  pointer-events:none;
+}
+
+.card > *{ position: relative; }
 
 .card-head{
   display:flex;
@@ -166,16 +203,21 @@ body{
 
 .field label{
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 900;
   opacity: .85;
 }
 
 .field input, .field select{
-  border: 1px solid rgba(20,24,35,.14);
+  border: 1px solid rgba(20,24,35,.12);
   border-radius: 12px;
   padding: 10px 12px;
   outline:none;
-  background:#fff;
+  background: rgba(255,255,255,.82);
+}
+
+.field input:focus, .field select:focus{
+  border-color: rgba(183,122,82,.55);
+  box-shadow: 0 0 0 4px rgba(230,163,110,.18);
 }
 
 .field.wide{ grid-column: 1 / -1; }
@@ -200,47 +242,47 @@ body{
   padding: 10px 12px;
   font-weight: 900;
   cursor:pointer;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid rgba(20,24,35,.12);
+  background: rgba(255,255,255,.80);
+  transition: transform .12s ease, box-shadow .12s ease;
 }
+
+.btn:hover, .btn-outline:hover{ transform: translateY(-1px); }
 
 .btn{
   border: 0;
   color:#fff;
   background: linear-gradient(135deg, var(--accent1), var(--accent2));
-}
-
-.btn-outline{
-  background:#fff;
+  box-shadow: 0 14px 28px rgba(183,122,82,.18);
 }
 
 .pill{
-  border: 1px solid var(--line);
+  border: 1px solid rgba(20,24,35,.12);
   padding: 8px 10px;
   border-radius: 999px;
   font-size: 13px;
   color: var(--muted);
-  background:#fff;
+  background: rgba(255,255,255,.82);
 }
 
 .table-wrap{
   overflow:auto;
   border-radius: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(20,24,35,.10);
 }
 
 table{
   width: 100%;
   border-collapse: collapse;
-  min-width: 980px;
-  background:#fff;
+  min-width: 1050px;
+  background: rgba(255,255,255,.85);
 }
 
 thead th{
   text-align:left;
   font-size: 13px;
   padding: 12px 10px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(20,24,35,.10);
   background: rgba(20,24,35,.03);
   position: sticky;
   top: 0;
@@ -257,12 +299,8 @@ tbody tr:hover{
   cursor:pointer;
 }
 
-tbody tr.low{
-  background: rgba(255, 193, 7, .12);
-}
-tbody tr.bad{
-  background: rgba(244, 67, 54, .10);
-}
+tbody tr.low{ background: rgba(255, 193, 7, .12); }
+tbody tr.bad{ background: rgba(244, 67, 54, .10); }
 
 .hint{
   margin: 10px 2px 0;
@@ -284,16 +322,19 @@ tbody tr.bad{
   align-items:center;
   justify-content:center;
   padding: 24px;
-  background: #ffffff;
+  background: radial-gradient(900px 420px at 30% 0%, rgba(230,163,110,.18), transparent 60%),
+              radial-gradient(820px 380px at 90% 10%, rgba(183,122,82,.16), transparent 60%),
+              #ffffff;
 }
 
 .login-card{
-  width: min(460px, 100%);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  width: min(520px, 100%);
+  border: 1px solid rgba(20,24,35,.10);
+  border-radius: 20px;
   padding: 22px;
   box-shadow: var(--shadow);
-  background: #fff;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(12px);
 }
 
 .login-brand{
@@ -303,9 +344,17 @@ tbody tr.bad{
   margin-bottom: 18px;
 }
 
-.login-logo{
-  width: 56px;
-  height: 56px;
+.login-logo-img{
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 14px 28px rgba(183,122,82,.18);
+}
+
+.login-logo-fallback{
+  width: 58px;
+  height: 58px;
   border-radius: 14px;
   display:flex;
   align-items:center;
@@ -314,6 +363,7 @@ tbody tr.bad{
   letter-spacing: .5px;
   color: #fff;
   background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  box-shadow: 0 14px 28px rgba(183,122,82,.18);
 }
 
 .login-card h1{
@@ -337,6 +387,7 @@ tbody tr.bad{
   color: #fff;
   font-weight: 900;
   background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  box-shadow: 0 16px 34px rgba(183,122,82,.18);
 }
 
 .login-status{
