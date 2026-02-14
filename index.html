@@ -13,7 +13,6 @@
     <div class="login-wrap">
       <div class="login-card">
         <div class="login-brand">
-          <!-- Logo real (adicione o arquivo em assets/images/logo-jb.png) -->
           <img class="login-logo-img" src="assets/images/logo-jb.png" alt="JB" onerror="this.style.display='none'">
           <div class="login-logo-fallback">JB</div>
 
@@ -26,7 +25,7 @@
         <label>Senha de acesso</label>
         <input id="login_password" type="password" placeholder="Digite sua senha" autocomplete="current-password"/>
 
-        <button id="btnLoginPage" class="btn-primary">Entrar</button>
+        <button id="btnLoginPage" class="btn-primary" type="button">Entrar</button>
 
         <div class="login-status">
           <span id="login_msg">Digite a senha para acessar.</span>
@@ -48,11 +47,11 @@
 
       <div class="topbar-actions">
         <span id="status" class="pill">offline</span>
-        <button id="btnLogout" class="btn-outline">Sair</button>
+        <button id="btnLogout" class="btn-outline" type="button">Sair</button>
       </div>
     </header>
 
-    <!-- MENU (BOTÕES SUPERIORES com PNG) -->
+    <!-- MENU -->
     <nav class="menu">
       <button class="iconbtn active" data-view="estoque" type="button">
         <img class="menu-ico" src="assets/images/estoque.png" alt="Estoque">
@@ -60,7 +59,6 @@
       </button>
 
       <button class="iconbtn" data-view="cadastros" type="button">
-        <!-- você falou que é cadastro.png -->
         <img class="menu-ico" src="assets/images/cadastros.png" alt="Cadastros">
         <span>Cadastros</span>
       </button>
@@ -80,7 +78,7 @@
       <div class="headline">
         <h2 id="viewTitle">Controle de estoque</h2>
         <div class="headline-actions">
-          <button id="btnRefreshAll" class="btn">Atualizar</button>
+          <button id="btnRefreshAll" class="btn" type="button">Atualizar</button>
         </div>
       </div>
 
@@ -90,28 +88,27 @@
           <div class="card-head">
             <h3>Produtos</h3>
             <div class="card-actions">
-              <button id="btnItensEmFalta" class="btn">Itens em falta</button>
-              <button id="btnVerTodos" class="btn-outline">Ver todos</button>
+              <button id="btnItensEmFalta" class="btn" type="button">Itens em falta</button>
+              <button id="btnVerTodos" class="btn-outline" type="button">Ver todos</button>
             </div>
           </div>
 
           <div class="filters">
             <div class="field">
-              <label>Peças</label>
-              <!-- mantive o id f_sku para compatibilidade -->
-              <input id="f_sku" placeholder="Filtrar por peça"/>
+              <label>Peça</label>
+              <input id="f_sku" placeholder="Filtrar por peça" autocomplete="off"/>
             </div>
             <div class="field">
               <label>Nome</label>
-              <input id="f_nome" placeholder="Filtrar por nome"/>
+              <input id="f_nome" placeholder="Filtrar por nome" autocomplete="off"/>
             </div>
             <div class="field">
               <label>Categoria</label>
-              <input id="f_categoria" placeholder="Filtrar por categoria"/>
+              <input id="f_categoria" placeholder="Filtrar por categoria" autocomplete="off"/>
             </div>
             <div class="field buttons">
-              <button id="btnFiltrar" class="btn">Filtrar</button>
-              <button id="btnLimparFiltro" class="btn-outline">Limpar</button>
+              <button id="btnFiltrar" class="btn" type="button">Filtrar</button>
+              <button id="btnLimparFiltro" class="btn-outline" type="button">Limpar</button>
             </div>
           </div>
 
@@ -119,7 +116,7 @@
             <table id="tblProdutos">
               <thead>
                 <tr>
-                  <th>Peças</th>
+                  <th>Peça</th>
                   <th>Descrição</th>
                   <th>Categoria</th>
                   <th>Marca</th>
@@ -146,38 +143,37 @@
           <div class="card-head">
             <h3>Cadastro de Produto</h3>
             <div class="card-actions">
-              <button id="btnNovoProduto" class="btn-outline">Novo</button>
+              <button id="btnNovoProduto" class="btn-outline" type="button">Novo</button>
             </div>
           </div>
 
-          <div class="form-grid">
+          <div class="form-grid" autocomplete="off">
             <!-- ID oculto (chave única do registro) -->
-            <input id="p_id" type="hidden" />
+            <input id="p_id" name="p_id" type="hidden" />
 
             <div class="field wide">
-              <label>Peças (manual)</label>
-              <!-- mantive p_sku para compatibilidade com seu JS -->
-              <input id="p_sku" placeholder="EX: CAPINHA-IPHONE"/>
+              <label>Peça (manual)</label>
+              <input id="p_sku" placeholder="EX: CAPINHA-IPHONE" autocomplete="off"/>
             </div>
 
             <div class="field wide">
               <label>Nome</label>
-              <input id="p_nome" placeholder="Descrição do produto"/>
+              <input id="p_nome" placeholder="Descrição do produto" autocomplete="off"/>
             </div>
 
             <div class="field">
               <label>Categoria</label>
-              <input id="p_categoria" placeholder="EX: CAPA"/>
+              <input id="p_categoria" placeholder="EX: CAPA" autocomplete="off"/>
             </div>
 
             <div class="field">
               <label>Marca</label>
-              <input id="p_marca" placeholder="EX: APPLE"/>
+              <input id="p_marca" placeholder="EX: APPLE" autocomplete="off"/>
             </div>
 
             <div class="field">
               <label>Modelo</label>
-              <input id="p_modelo" placeholder="EX: IPHONE 13 / A14 / etc"/>
+              <input id="p_modelo" placeholder="EX: IPHONE 13 / A14 / etc" autocomplete="off"/>
             </div>
 
             <div class="field">
@@ -190,27 +186,27 @@
 
             <div class="field">
               <label>Custo</label>
-              <input id="p_custo" placeholder="0,00"/>
+              <input id="p_custo" placeholder="0,00" autocomplete="off" inputmode="decimal"/>
             </div>
 
             <div class="field">
               <label>Preço</label>
-              <input id="p_preco" placeholder="0,00"/>
+              <input id="p_preco" placeholder="0,00" autocomplete="off" inputmode="decimal"/>
             </div>
 
             <div class="field">
               <label>Estoque atual</label>
-              <input id="p_estoque" placeholder="0"/>
+              <input id="p_estoque" placeholder="0" autocomplete="off" inputmode="numeric"/>
             </div>
 
             <div class="field">
               <label>Estoque mínimo</label>
-              <input id="p_minimo" placeholder="0"/>
+              <input id="p_minimo" placeholder="0" autocomplete="off" inputmode="numeric"/>
             </div>
 
             <div class="field wide">
               <label>Local</label>
-              <input id="p_local" placeholder="EX: ESTOQUE / VITRINE"/>
+              <input id="p_local" placeholder="EX: ESTOQUE / VITRINE" autocomplete="off"/>
             </div>
 
             <div class="field">
@@ -222,12 +218,12 @@
             </div>
 
             <div class="form-actions">
-              <button id="btnSalvarProduto" class="btn">Salvar</button>
-              <button id="btnLimparProduto" class="btn-outline">Limpar</button>
+              <button id="btnSalvarProduto" class="btn" type="button">Salvar</button>
+              <button id="btnLimparProduto" class="btn-outline" type="button">Limpar</button>
             </div>
           </div>
 
-          <p class="hint">Peças é forçado para MAIÚSCULO automaticamente.</p>
+          <p class="hint">Peça é forçada para MAIÚSCULO automaticamente.</p>
         </div>
       </section>
 
@@ -238,13 +234,13 @@
             <h3>Movimentações</h3>
             <div class="card-actions">
               <span class="pill">Peça selecionada: <b id="selectedSku">---</b></span>
-              <button id="btnLoadMoves" class="btn-outline">Carregar</button>
+              <button id="btnLoadMoves" class="btn-outline" type="button">Carregar</button>
             </div>
           </div>
 
-          <div class="form-grid">
+          <div class="form-grid" autocomplete="off">
             <!-- ID oculto do item selecionado (movimenta por ID) -->
-            <input id="m_id" type="hidden" />
+            <input id="m_id" name="m_id" type="hidden" />
 
             <div class="field">
               <label>Tipo</label>
@@ -257,28 +253,27 @@
 
             <div class="field">
               <label>Peça</label>
-              <!-- mantive m_sku para compatibilidade -->
-              <input id="m_sku" placeholder="Código da peça"/>
+              <input id="m_sku" placeholder="Código da peça" autocomplete="off"/>
             </div>
 
             <div class="field">
               <label>Quantidade</label>
-              <input id="m_qtd" placeholder="0"/>
+              <input id="m_qtd" placeholder="0" autocomplete="off" inputmode="numeric"/>
             </div>
 
             <div class="field wide">
               <label>Observações</label>
-              <input id="m_obs" placeholder="EX: Venda balcão 00053"/>
+              <input id="m_obs" placeholder="EX: Venda balcão 00053" autocomplete="off"/>
             </div>
 
             <div class="field">
               <label>Usuário</label>
-              <input id="m_usuario" placeholder="EX: Luziano"/>
+              <input id="m_usuario" placeholder="EX: Luziano" autocomplete="off"/>
             </div>
 
             <div class="form-actions">
-              <button id="btnRegistrarMov" class="btn">Registrar</button>
-              <button id="btnLimparMov" class="btn-outline">Limpar</button>
+              <button id="btnRegistrarMov" class="btn" type="button">Registrar</button>
+              <button id="btnLimparMov" class="btn-outline" type="button">Limpar</button>
             </div>
           </div>
 
@@ -318,9 +313,9 @@
           <div class="card-head">
             <h3>Relatórios</h3>
             <div class="card-actions">
-              <button id="btnRelMinimo" class="btn">Abaixo do mínimo</button>
-              <button id="btnRelZerados" class="btn-outline">Zerados</button>
-              <button id="btnRelLimpar" class="btn-outline">Limpar</button>
+              <button id="btnRelMinimo" class="btn" type="button">Abaixo do mínimo</button>
+              <button id="btnRelZerados" class="btn-outline" type="button">Zerados</button>
+              <button id="btnRelLimpar" class="btn-outline" type="button">Limpar</button>
             </div>
           </div>
 
