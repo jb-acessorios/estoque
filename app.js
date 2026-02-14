@@ -5,7 +5,7 @@
 // ==========================================
 
 // COLE A URL DO SEU WEB APP AQUI:
-const API_URL = "https://script.google.com/macros/s/AKfycbxxT-hSrXK69CwobJLOzoTIu7b1pKk-042dk7KxlhwqSVsapyVx2Ag_J68ZfEM36R2x/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwxLABExh5-KwzmzZU8HAF6wj6gbiqVW0pgu8haA9YXvRmGZnezmXzWOses0iirwlU/exec";
 
 let TOKEN = "";
 let PRODUCTS = [];
