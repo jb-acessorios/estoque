@@ -1,7 +1,8 @@
 // ==========================================
 // JB ACESSÓRIOS - Front (GitHub Pages)
-// Tela de login inicial + sistema após login
+// Login + sistema
 // Backend: Google Apps Script (Web App)
+// AGORA: suporte a PEÇA (SKU) repetida usando ID único
 // ==========================================
 
 // COLE A URL DO SEU WEB APP AQUI:
@@ -10,19 +11,21 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyscJsQlwKtm9vkEW2-5tz4
 let TOKEN = "";
 let PRODUCTS = [];
 let MOVES_ALL = [];
-let selectedSku = "";
+
+// Seleção do item (AGORA por ID)
+let selectedId = "";
+let selectedPeca = "";
 
 // Helpers
 const $ = (id) => document.getElementById(id);
-const skuUp = (s) => String(s || "").trim().toUpperCase();
-const norm  = (s) => String(s || "").toLowerCase().trim();
+const up = (s) => String(s || "").trim().toUpperCase();
+const norm = (s) => String(s || "").toLowerCase().trim();
 
 function saveTokenSession(token){ sessionStorage.setItem("jb_token", token); }
 function loadTokenSession(){ return sessionStorage.getItem("jb_token") || ""; }
 function clearTokenSession(){ sessionStorage.removeItem("jb_token"); }
 
 function showOnly(view){
-  // view: "login" ou "app"
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   const el = document.getElementById(`view-${view}`);
   if (el) el.classList.add("active");
@@ -55,7 +58,6 @@ async function apiGet(action, params = {}) {
 async function apiPost(payload) {
   const r = await fetch(API_URL, {
     method: "POST",
-    // sem headers para evitar preflight/CORS
     body: JSON.stringify({ ...payload, token: TOKEN }),
   });
 
@@ -116,8 +118,12 @@ function renderProducts(list) {
     if (est <= min) tr.classList.add("low");
     if (est <= 0) tr.classList.add("bad");
 
+    // Compatibilidade: API pode mandar "peca" (novo) ou "sku" (antigo)
+    const peca = (p.peca ?? p.sku ?? "");
+    const id = (p.id ?? "");
+
     tr.innerHTML = `
-      <td>${p.sku ?? ""}</td>
+      <td>${peca}</td>
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
       <td>${p.marca ?? ""}</td>
@@ -131,13 +137,22 @@ function renderProducts(list) {
     `;
 
     tr.addEventListener("click", () => {
-      selectedSku = skuUp(p.sku || "");
-      const s = $("selectedSku");
-      if (s) s.textContent = selectedSku || "---";
+      selectedId = String(id || "").trim();
+      selectedPeca = up(peca);
 
-      if ($("m_sku")) $("m_sku").value = selectedSku;
+      // Mostra seleção (agora por ID)
+      const s = $("selectedSku"); // você pode renomear depois, mas mantive o ID do HTML
+      if (s) s.textContent = selectedPeca ? `${selectedPeca} (${selectedId})` : "---";
 
+      // Preenche movimentação
+      if ($("m_id")) $("m_id").value = selectedId;
+      if ($("m_sku")) $("m_sku").value = selectedPeca;     // mantém compatível com seu HTML atual
+      if ($("m_peca")) $("m_peca").value = selectedPeca;   // se existir
+
+      // Preenche cadastro
       fillProductForm(p);
+
+      // Filtra movimentos do item (por ID)
       renderMovesFiltered();
     });
 
@@ -149,20 +164,22 @@ function renderProducts(list) {
 // FILTROS
 // =====================
 function applyFilters() {
-  const fsku = skuUp($("f_sku")?.value);
+  // Compat: seu HTML pode ter f_sku ainda
+  const fpeca = up(($("f_peca")?.value ?? $("f_sku")?.value) || "");
   const fnome = norm($("f_nome")?.value);
-  const fcat = norm($("f_categoria")?.value);
+  const fcat  = norm($("f_categoria")?.value);
 
   let list = PRODUCTS;
 
-  if (fsku) list = list.filter(p => skuUp(p.sku).includes(fsku));
+  if (fpeca) list = list.filter(p => up(p.peca ?? p.sku).includes(fpeca));
   if (fnome) list = list.filter(p => norm(p.nome).includes(fnome));
-  if (fcat) list = list.filter(p => norm(p.categoria).includes(fcat));
+  if (fcat)  list = list.filter(p => norm(p.categoria).includes(fcat));
 
   renderProducts(list);
 }
 
 function clearFilters() {
+  if ($("f_peca")) $("f_peca").value = "";
   if ($("f_sku")) $("f_sku").value = "";
   if ($("f_nome")) $("f_nome").value = "";
   if ($("f_categoria")) $("f_categoria").value = "";
@@ -181,10 +198,16 @@ function renderMoves(list) {
 
   list.forEach(m => {
     const tr = document.createElement("tr");
+
+    // Compat: pode vir "peca/sku" e "id"
+    const id = m.id || "";
+    const peca = m.peca || m.sku || "";
+
     tr.innerHTML = `
       <td>${m.data || ""}</td>
       <td>${m.tipo || ""}</td>
-      <td>${m.sku || ""}</td>
+      <td>${peca}</td>
+      <td>${id}</td>
       <td>${m.quantidade || ""}</td>
       <td>${m.obs || ""}</td>
       <td>${m.usuario || ""}</td>
@@ -194,9 +217,8 @@ function renderMoves(list) {
 }
 
 function renderMovesFiltered() {
-  const sku = skuUp(selectedSku);
-  if (!sku) return renderMoves([]);
-  const filtered = (MOVES_ALL || []).filter(m => skuUp(m.sku) === sku);
+  if (!selectedId) return renderMoves([]);
+  const filtered = (MOVES_ALL || []).filter(m => String(m.id || "").trim() === selectedId);
   renderMoves(filtered);
 }
 
@@ -204,22 +226,34 @@ function renderMovesFiltered() {
 // CADASTRO
 // =====================
 function fillProductForm(p){
-  if ($("p_sku")) $("p_sku").value = p.sku || "";
+  const peca = (p.peca ?? p.sku ?? "");
+  const id = (p.id ?? "");
+
+  // Se você criar um input hidden p_id, ele vai receber o ID para editar corretamente
+  if ($("p_id")) $("p_id").value = id;
+
+  // Compat: seu HTML pode estar p_sku ainda
+  if ($("p_peca")) $("p_peca").value = peca || "";
+  if ($("p_sku")) $("p_sku").value = peca || "";
+
   if ($("p_nome")) $("p_nome").value = p.nome || "";
   if ($("p_categoria")) $("p_categoria").value = p.categoria || "";
   if ($("p_marca")) $("p_marca").value = p.marca || "";
   if ($("p_modelo")) $("p_modelo").value = p.modelo || "";
-  if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
+  if ($("p_estado")) $("p_estado").value = up(p.estado || "NOVA");
   if ($("p_custo")) $("p_custo").value = p.custo || "";
   if ($("p_preco")) $("p_preco").value = p.preco || "";
   if ($("p_estoque")) $("p_estoque").value = p.estoque || "";
   if ($("p_minimo")) $("p_minimo").value = p.minimo || "";
   if ($("p_local")) $("p_local").value = p.local || "";
-  if ($("p_ativo")) $("p_ativo").value = (p.ativo || "SIM").toUpperCase();
+  if ($("p_ativo")) $("p_ativo").value = up(p.ativo || "SIM");
 }
 
 function clearProductForm(){
-  ["p_sku","p_nome","p_categoria","p_marca","p_modelo","p_custo","p_preco","p_estoque","p_minimo","p_local"]
+  // limpa ID de edição
+  if ($("p_id")) $("p_id").value = "";
+
+  ["p_peca","p_sku","p_nome","p_categoria","p_marca","p_modelo","p_custo","p_preco","p_estoque","p_minimo","p_local"]
     .forEach(id => { if ($(id)) $(id).value = ""; });
 
   if ($("p_ativo")) $("p_ativo").value = "SIM";
@@ -227,27 +261,35 @@ function clearProductForm(){
 }
 
 async function saveProduct(){
+  const pecaValue = up(($("p_peca")?.value ?? $("p_sku")?.value) || "");
+  const idValue = String($("p_id")?.value || "").trim(); // se existir, edita; se vazio, cria novo
+
   const product = {
-    sku: skuUp($("p_sku")?.value),
+    id: idValue || "",         // <--- CHAVE (se vazio, cria um novo)
+    peca: pecaValue,           // <--- pode repetir
     nome: ($("p_nome")?.value || "").trim(),
     categoria: ($("p_categoria")?.value || "").trim(),
     marca: ($("p_marca")?.value || "").trim(),
     modelo: ($("p_modelo")?.value || "").trim(),
-    estado: ($("p_estado")?.value || "NOVA").toUpperCase(),
+    estado: up(($("p_estado")?.value || "NOVA")),
     custo: ($("p_custo")?.value || "").trim(),
     preco: ($("p_preco")?.value || "").trim(),
     estoque: ($("p_estoque")?.value || "").trim(),
     minimo: ($("p_minimo")?.value || "").trim(),
     local: ($("p_local")?.value || "").trim(),
-    ativo: (($("p_ativo")?.value || "SIM")).toUpperCase()
+    ativo: up(($("p_ativo")?.value || "SIM"))
   };
 
-  if (!product.sku) return alert("Peça é obrigatória.");
+  if (!product.peca) return alert("Peça é obrigatória.");
 
   const r = await apiPost({ action:"upsertProduct", product });
   if (!r.ok) return alert(r.error);
 
   alert(r.message);
+
+  // Depois de salvar, se a API retornar id, guarda no form (pra edits seguintes)
+  if (r.id && $("p_id")) $("p_id").value = String(r.id);
+
   await refreshAll();
   setView("estoque");
 }
@@ -256,24 +298,31 @@ async function saveProduct(){
 // MOVIMENTAR (entrada/saída/ajuste)
 // =====================
 async function moveStock(){
+  const idFromForm = String($("m_id")?.value || "").trim();
+
+  const pecaFromForm = up(($("m_peca")?.value ?? $("m_sku")?.value) || "");
+
   const move = {
     tipo: $("m_tipo")?.value,
-    sku: skuUp($("m_sku")?.value),
+    id: idFromForm || selectedId,      // <--- usa ID SEMPRE
+    peca: pecaFromForm || selectedPeca, // só pra registro/visual
     quantidade: ($("m_qtd")?.value || "").trim(),
     obs: ($("m_obs")?.value || "").trim(),
     usuario: ($("m_usuario")?.value || "").trim() || "JB"
   };
 
-  if (!move.sku) return alert("Peça é obrigatória.");
+  if (!move.id) return alert("Selecione uma peça na lista primeiro (para pegar o ID).");
   if (!move.quantidade) return alert("Quantidade é obrigatória.");
 
   const r = await apiPost({ action:"moveStock", move });
   if (!r.ok) return alert(r.error);
 
-  alert(`${r.message}\nPeça: ${r.sku}\nAntes: ${r.estoque_anterior}\nAgora: ${r.estoque_novo}`);
+  alert(`${r.message}\nPeça: ${r.peca}\nID: ${r.id}\nAntes: ${r.estoque_anterior}\nAgora: ${r.estoque_novo}`);
 
-  selectedSku = move.sku;
-  if ($("selectedSku")) $("selectedSku").textContent = selectedSku;
+  selectedId = String(r.id || move.id);
+  selectedPeca = up(r.peca || move.peca);
+
+  if ($("selectedSku")) $("selectedSku").textContent = `${selectedPeca} (${selectedId})`;
 
   if ($("m_qtd")) $("m_qtd").value = "";
   if ($("m_obs")) $("m_obs").value = "";
@@ -293,9 +342,10 @@ function renderRel(list){
   tb.innerHTML = "";
 
   list.forEach(p => {
+    const peca = (p.peca ?? p.sku ?? "");
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${p.sku ?? ""}</td>
+      <td>${peca}</td>
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
       <td>${p.modelo ?? ""}</td>
@@ -344,6 +394,8 @@ async function loadMoves(){
   if (!r.ok) throw new Error(r.error);
 
   MOVES_ALL = r.moves || [];
+
+  // mantém filtro do item selecionado
   renderMovesFiltered();
 }
 
@@ -394,7 +446,9 @@ function doLogout(){
   TOKEN = "";
   PRODUCTS = [];
   MOVES_ALL = [];
-  selectedSku = "";
+  selectedId = "";
+  selectedPeca = "";
+
   clearTokenSession();
 
   renderProducts([]);
@@ -457,7 +511,7 @@ function wireActions(){
 
   $("btnNovoProduto")?.addEventListener("click", () => {
     clearProductForm();
-    $("p_sku")?.focus();
+    ($("p_peca") || $("p_sku"))?.focus();
   });
 
   $("btnRegistrarMov")?.addEventListener("click", async () => {
@@ -467,7 +521,9 @@ function wireActions(){
 
   $("btnLimparMov")?.addEventListener("click", () => {
     if ($("m_tipo")) $("m_tipo").value = "ENTRADA";
-    if ($("m_sku")) $("m_sku").value = selectedSku || "";
+    if ($("m_id")) $("m_id").value = selectedId || "";
+    if ($("m_peca")) $("m_peca").value = selectedPeca || "";
+    if ($("m_sku")) $("m_sku").value = selectedPeca || "";
     if ($("m_qtd")) $("m_qtd").value = "";
     if ($("m_obs")) $("m_obs").value = "";
     if ($("m_usuario")) $("m_usuario").value = "";
