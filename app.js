@@ -5,8 +5,9 @@
 // Suporte a PEÇA repetida usando ID único
 //
 // AJUSTES:
-// 1) Cadastro em modo protegido: só cria NOVO após clicar em "Novo"
+// 1) Cadastro protegido: só cria NOVO após clicar em "Novo"
 // 2) Movimentações: seleção por LISTA (select) usando ID
+// 3) Excluir item: inativa (ATIVO=NAO) por ID (não apaga histórico)
 // ==========================================
 
 // COLE A URL DO SEU WEB APP AQUI:
@@ -115,8 +116,10 @@ function setCadMode(mode){
 
   const btnSalvar = $("btnSalvarProduto");
   const btnNovo = $("btnNovoProduto");
+  const btnExcluir = $("btnExcluirProduto");
 
   if (btnSalvar) btnSalvar.disabled = (mode === "LOCKED");
+  if (btnExcluir) btnExcluir.disabled = (mode !== "EDIT"); // só exclui em EDIT (tem ID)
 
   if (btnNovo) {
     btnNovo.classList.toggle("active", mode === "NEW");
@@ -125,14 +128,15 @@ function setCadMode(mode){
 
   const hint = $("cadHint");
   if (hint) {
-    if (mode === "LOCKED") hint.textContent = "Clique em NOVO para criar. Para editar, selecione um item na tabela.";
-    if (mode === "NEW") hint.textContent = "Modo NOVO: ao salvar, será criado um registro novo (mesmo com peça repetida).";
-    if (mode === "EDIT") hint.textContent = "Modo EDIÇÃO: ao salvar, você atualiza o registro selecionado (ID).";
+    if (mode === "LOCKED") hint.textContent = "Clique em NOVO para criar. Para editar/excluir, selecione um item na tabela.";
+    if (mode === "NEW") hint.textContent = "Modo NOVO: ao salvar, cria um registro novo (mesmo com peça repetida).";
+    if (mode === "EDIT") hint.textContent = "Modo EDIÇÃO: ao salvar você atualiza o registro selecionado (ID). Excluir inativa o item (ATIVO=NAO).";
   }
 }
 
 function startNewProduct(){
-  clearProductForm(true);      // limpa e mantém travas
+  // limpa form e entra em NEW
+  clearProductForm(true);
   setCadMode("NEW");
   ($("p_sku"))?.focus();
 }
@@ -185,18 +189,12 @@ function renderProducts(list) {
       const s = $("selectedSku");
       if (s) s.textContent = selectedPeca ? `${selectedPeca} (${selectedId})` : "---";
 
-      // Preenche movimentação (ID é o principal!)
+      // Preenche movimentação
       if ($("m_id")) $("m_id").value = selectedId;
-
-      // Se existir select de movimentação, seleciona ele também
-      if ($("m_pick")) {
-        $("m_pick").value = selectedId;
-      }
-
-      // Preenche campo visual de peça (readOnly)
+      if ($("m_pick")) $("m_pick").value = selectedId;
       if ($("m_sku")) $("m_sku").value = selectedPeca;
 
-      // Preenche cadastro (entra em EDIT)
+      // Preenche cadastro (EDIT)
       fillProductForm(p);
 
       // Movimentos do item
@@ -265,7 +263,6 @@ function refreshMovePicker(){
     sel.appendChild(opt);
   });
 
-  // se já tiver seleção, mantém
   if (selectedId) sel.value = selectedId;
 }
 
@@ -341,15 +338,12 @@ function clearProductForm(keepMode){
 }
 
 async function saveProduct(){
-  // trava: só salva se estiver em NEW ou EDIT
   if (CAD_MODE !== "NEW" && CAD_MODE !== "EDIT") {
     return alert("Clique em NOVO para criar um cadastro novo, ou selecione um item na tabela para editar.");
   }
 
   const pecaValue = up(($("p_sku")?.value) || "");
   const idValue = String($("p_id")?.value || "").trim();
-
-  // Se está em NEW, força id vazio (sempre cria novo)
   const finalId = (CAD_MODE === "NEW") ? "" : idValue;
 
   const product = {
@@ -375,14 +369,10 @@ async function saveProduct(){
 
   alert(r.message);
 
-  // após salvar:
-  // - se NEW: volta pra LOCKED (evita duplicar sem querer ao clicar salvar de novo)
-  // - se EDIT: mantém em EDIT
   if (CAD_MODE === "NEW") {
     clearProductForm(true);
     setCadMode("LOCKED");
   } else {
-    // mantém id (se a API devolveu)
     if (r.id && $("p_id")) $("p_id").value = String(r.id);
     setCadMode("EDIT");
   }
@@ -392,12 +382,43 @@ async function saveProduct(){
 }
 
 // =====================
-// MOVIMENTAR (entrada/saída/ajuste)
+// EXCLUIR (INATIVAR)
+// =====================
+async function deleteProduct(){
+  const id = String($("p_id")?.value || "").trim();
+  if (!id) return alert("Para excluir, selecione um item na tabela (modo edição).");
+
+  const peca = up(($("p_sku")?.value || ""));
+  const ok = confirm(`Deseja EXCLUIR (inativar) este item?\n\nPeça: ${peca}\nID: ${id}\n\nEle ficará ATIVO=NAO e não aparecerá mais no estoque.`);
+  if (!ok) return;
+
+  const r = await apiPost({ action:"deleteProduct", id });
+  if (!r.ok) return alert(r.error);
+
+  alert(r.message);
+
+  // limpa seleção/form
+  selectedId = "";
+  selectedPeca = "";
+  if ($("selectedSku")) $("selectedSku").textContent = "---";
+
+  clearProductForm(true);
+  setCadMode("LOCKED");
+
+  if ($("m_id")) $("m_id").value = "";
+  if ($("m_pick")) $("m_pick").value = "";
+  if ($("m_sku")) $("m_sku").value = "";
+
+  await refreshAll();
+  setView("estoque");
+}
+
+// =====================
+// MOVIMENTAR
 // =====================
 async function moveStock(){
   const idFromPick = String($("m_pick")?.value || "").trim();
   const idFromHidden = String($("m_id")?.value || "").trim();
-
   const moveId = idFromPick || idFromHidden || selectedId;
 
   if (!moveId) return alert("Selecione uma peça na lista (por ID) antes de movimentar.");
@@ -425,7 +446,6 @@ async function moveStock(){
   selectedPeca = up(r.peca || move.peca);
 
   if ($("selectedSku")) $("selectedSku").textContent = `${selectedPeca} (${selectedId})`;
-
   if ($("m_id")) $("m_id").value = selectedId;
   if ($("m_pick")) $("m_pick").value = selectedId;
   if ($("m_sku")) $("m_sku").value = selectedPeca;
@@ -490,9 +510,11 @@ async function loadProducts(){
   const r = await apiGet("listProducts");
   if (!r.ok) throw new Error(r.error);
 
-  PRODUCTS = r.products || [];
+  // ✅ filtra inativos
+  PRODUCTS = (r.products || []).filter(p => up(p.ativo ?? "SIM") !== "NAO");
+
   renderProducts(PRODUCTS);
-  refreshMovePicker(); // atualiza lista do select
+  refreshMovePicker();
 }
 
 async function loadMoves(){
@@ -510,7 +532,7 @@ async function refreshAll(){
 }
 
 // =====================
-// LOGIN (TELA INICIAL)
+// LOGIN
 // =====================
 async function doLoginFromPage(){
   const input = $("login_password");
@@ -539,7 +561,6 @@ async function doLoginFromPage(){
     await refreshAll();
     setView("estoque");
 
-    // inicia cadastro travado (seguro)
     setCadMode("LOCKED");
 
   } catch(err){
@@ -620,9 +641,14 @@ function wireActions(){
     clearProductForm(false);
   });
 
-  // ✅ NOVO: ativa modo NEW (e não sobrescreve)
   $("btnNovoProduto")?.addEventListener("click", () => {
     startNewProduct();
+  });
+
+  // ✅ Excluir (inativar)
+  $("btnExcluirProduto")?.addEventListener("click", async () => {
+    if (!TOKEN) return;
+    try{ await deleteProduct(); } catch(e){ alert(e.message || String(e)); }
   });
 
   // Select de movimentação
@@ -638,7 +664,6 @@ function wireActions(){
 
     if ($("m_id")) $("m_id").value = selectedId;
     if ($("m_sku")) $("m_sku").value = selectedPeca;
-
     if ($("selectedSku")) $("selectedSku").textContent = `${selectedPeca} (${selectedId})`;
 
     renderMovesFiltered();
