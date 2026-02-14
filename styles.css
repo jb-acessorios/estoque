@@ -29,11 +29,10 @@ body{
 .view{ display:none; }
 .view.active{ display:block; }
 
-/* IMPORTANTÍSSIMO: telas internas individuais */
 .view2{ display:none; }
 .view2.active{ display:block; }
 
-/* Topbar */
+/* ================= TOPBAR ================= */
 .topbar{
   padding: 16px 18px;
   display:flex;
@@ -51,19 +50,6 @@ body{
   gap: 12px;
 }
 
-.brand-mark{
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-weight: 900;
-  background: linear-gradient(135deg, var(--accent1), var(--accent2));
-  box-shadow: 0 12px 26px rgba(183,122,82,.22);
-}
-
 .brand-title{
   font-weight: 900;
   letter-spacing: .3px;
@@ -79,50 +65,106 @@ body{
   gap: 10px;
 }
 
-/* Menu */
-.menu{
-  padding: 14px 18px;
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--line);
-  background: rgba(255,255,255,.8);
-  backdrop-filter: blur(10px);
+/* ✅ Logo do topo */
+.brand-logo{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #fff;
+  padding: 2px;
+  box-shadow: 0 10px 22px rgba(0,0,0,.14);
 }
 
-.iconbtn{
-  border: 1px solid rgba(20,24,35,.10);
-  background: rgba(255,255,255,.75);
-  border-radius: 14px;
-  padding: 10px 14px;
-  cursor:pointer;
+/* fallback */
+.brand-mark{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display:flex;
   align-items:center;
-  gap: 10px;
-  min-width: 170px;
   justify-content:center;
-  box-shadow: 0 10px 24px rgba(10,14,24,.07);
+  color:#fff;
   font-weight: 900;
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  box-shadow: 0 12px 26px rgba(183,122,82,.22);
+}
+
+/* ================= MENU (barra azul, ícone maior, sem quadrado) ================= */
+.menu{
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: nowrap;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  background: linear-gradient(180deg, #2f7fbe 0%, #1f6aa8 55%, #185a93 100%);
+  box-shadow: 0 10px 20px rgba(0,0,0,.10);
+  overflow-x: auto;
+  backdrop-filter: none;
+}
+
+.menu::-webkit-scrollbar{ height: 8px; }
+.menu::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.25);
+  border-radius: 999px;
+}
+.menu::-webkit-scrollbar-track{ background: transparent; }
+
+/* Botão SEM quadrado: só um halo leve no hover/ativo */
+.iconbtn{
+  border: none;
+  background: transparent;
+  box-shadow: none;
+
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor:pointer;
+
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  gap: 6px;
+
+  font-weight: 900;
+  transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
 }
 
 .iconbtn:hover{
   transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(10,14,24,.10);
+  background: rgba(255,255,255,.10);
+  box-shadow: 0 10px 18px rgba(0,0,0,.12);
 }
 
 .iconbtn.active{
-  border-color: rgba(183,122,82,.55);
-  box-shadow: 0 16px 34px rgba(183,122,82,.16);
+  background: rgba(255,255,255,.16);
+  box-shadow: 0 12px 20px rgba(0,0,0,.14);
 }
 
+/* Ícone maior (controle aqui) */
 .menu-ico{
-  width: 22px;
-  height: 22px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(183,122,82,.18));
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.28));
 }
 
+.iconbtn span{
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+
+/* Mobile */
+@media (max-width: 520px){
+  .menu-ico{ width: 44px; height: 44px; }
+  .iconbtn span{ font-size: 12px; }
+}
+
+/* ================= LAYOUT GERAL ================= */
 .main{
   padding: 18px;
   max-width: 1200px;
@@ -315,7 +357,7 @@ tbody tr.bad{ background: rgba(244, 67, 54, .10); }
 }
 .field.small{ max-width: 180px; }
 
-/* LOGIN */
+/* ================= LOGIN ================= */
 .login-wrap{
   min-height: 100vh;
   display:flex;
@@ -347,8 +389,10 @@ tbody tr.bad{ background: rgba(244, 67, 54, .10); }
 .login-logo-img{
   width: 58px;
   height: 58px;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: 14px;
+  background: #fff;
+  padding: 4px;
   box-shadow: 0 14px 28px rgba(183,122,82,.18);
 }
 
@@ -396,171 +440,22 @@ tbody tr.bad{ background: rgba(244, 67, 54, .10); }
   opacity: .85;
 }
 
-/* =========================
-   LINHA SELECIONADA (AZUL CLARO)
-   ========================= */
-
-/* aplica no TD (melhor que no TR, pq alguns temas sobrescrevem o TR) */
+/* ================= LINHA SELECIONADA (AZUL CLARO) ================= */
 #tblProdutos tbody tr.selected > td{
-  background: #dbeafe !important;  /* azul bem claro */
+  background: #dbeafe !important;
   border-top: 1px solid #93c5fd !important;
   border-bottom: 1px solid #93c5fd !important;
 }
 
-/* opcional: “bordinha” azul na esquerda pra ficar bem visível */
 #tblProdutos tbody tr.selected > td:first-child{
   box-shadow: inset 4px 0 0 #3b82f6 !important;
 }
 
-/* hover (pra não confundir com o selecionado) */
+/* Hover não sobrescreve seleção */
 #tblProdutos tbody tr:hover > td{
   background: rgba(59,130,246,0.08);
   transition: background .12s ease;
 }
-
-/* =========================================================
-   MENU estilo barra azul (igual ao print)
-   Cole no FINAL do styles.css para sobrescrever
-   ========================================================= */
-
-.menu{
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: nowrap;
-  border-bottom: 1px solid rgba(0,0,0,.12);
-  background: linear-gradient(180deg, #2f7fbe 0%, #1f6aa8 55%, #185a93 100%);
-  box-shadow: 0 10px 20px rgba(0,0,0,.10);
-  overflow-x: auto;
-  backdrop-filter: none; /* remove blur para ficar igual sistema clássico */
-}
-
-.menu::-webkit-scrollbar{ height: 8px; }
-.menu::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.25);
-  border-radius: 999px;
-}
-.menu::-webkit-scrollbar-track{ background: transparent; }
-
-.iconbtn{
-  width: 92px;
-  min-width: 92px;
-  height: 74px;
-  border: 1px solid rgba(255,255,255,.22);
-  border-radius: 10px;
-  padding: 8px 6px;
-  cursor: pointer;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-
-  background: rgba(255,255,255,.08);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
-  font-weight: 900;
-
-  transition: transform .12s ease, background .12s ease, box-shadow .12s ease, border-color .12s ease;
-}
-
-.iconbtn:hover{
-  transform: translateY(-1px);
-  background: rgba(255,255,255,.14);
-  box-shadow: 0 12px 18px rgba(0,0,0,.12), inset 0 0 0 1px rgba(255,255,255,.15);
-}
-
-.iconbtn.active{
-  background: rgba(255,255,255,.22);
-  border-color: rgba(255,255,255,.35);
-  box-shadow: 0 14px 20px rgba(0,0,0,.14), inset 0 0 0 1px rgba(255,255,255,.20);
-}
-
-.menu-ico{
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.25));
-}
-
-.iconbtn span{
-  font-size: 12px;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,.25);
-}
-
-/* Ajuste mobile */
-@media (max-width: 520px){
-  .iconbtn{ width: 84px; min-width: 84px; height: 70px; }
-  .menu-ico{ width: 30px; height: 30px; }
-}
-
-/* =========================================================
-   TABELA: hover não pode sobrescrever linha selecionada
-   ========================================================= */
-
-/* mantém seu hover, mas desliga quando estiver selecionado */
-#tblProdutos tbody tr:hover > td{
-  background: rgba(59,130,246,0.08);
-  transition: background .12s ease;
-}
-
 #tblProdutos tbody tr.selected:hover > td{
   background: #dbeafe !important;
-}
-
-/* =========================================================
-   MENU: ÍCONES MAIORES + SEM QUADRADO (somente ícone + texto)
-   Cole no FINAL do styles.css
-   ========================================================= */
-
-.menu{
-  gap: 18px; /* um respiro maior entre itens */
-}
-
-/* remove o "quadrado" do botão */
-.iconbtn{
-  width: auto;             /* não força caixinha */
-  min-width: 0;
-  height: auto;
-  padding: 6px 10px;       /* área clicável, mas sem bloco */
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  box-shadow: none;
-}
-
-/* hover e active sem quadrado: só um brilho suave atrás */
-.iconbtn:hover{
-  transform: translateY(-1px);
-  background: rgba(255,255,255,.10);  /* leve halo */
-  box-shadow: 0 10px 18px rgba(0,0,0,.12);
-}
-
-.iconbtn.active{
-  background: rgba(255,255,255,.16);
-  box-shadow: 0 12px 20px rgba(0,0,0,.14);
-}
-
-/* ÍCONE MAIOR (aqui é o tamanho) */
-.menu-ico{
-  width: 52px;   /* aumente aqui se quiser: 56px, 60px... */
-  height: 52px;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(0,0,0,.28));
-}
-
-/* texto um pouco maior pra acompanhar */
-.iconbtn span{
-  font-size: 13px;
-  font-weight: 900;
-}
-
-/* Mobile */
-@media (max-width: 520px){
-  .menu-ico{ width: 44px; height: 44px; }
-  .iconbtn span{ font-size: 12px; }
 }
