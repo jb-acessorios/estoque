@@ -153,7 +153,7 @@ function setCadMode(mode){
   if (hint) {
     if (mode === "LOCKED") hint.textContent = "Clique em NOVO para criar. Para editar/excluir, selecione um item na tabela.";
     if (mode === "NEW") hint.textContent = "Modo NOVO: ao salvar, cria um registro novo (mesmo com peça repetida).";
-    if (mode === "EDIT") hint.textContent = "Modo EDIÇÃO: ao salvar atualiza o registro (ID). Excluir inativa (ATIVO=NAO).";
+    if (mode === "EDIT") hint.textContent = "Modo EDIÇÃO: ao salvar atualiza o registro (ID).";
   }
 }
 
@@ -174,6 +174,9 @@ function renderProducts(list) {
 
   const tb = table.querySelector("tbody");
   tb.innerHTML = "";
+
+  // mantém referência da seleção atual, para re-marcar após render
+  const currentSelectedId = selectedId;
 
   selectedRowEl = null;
 
@@ -206,7 +209,7 @@ function renderProducts(list) {
     `;
 
     // ✅ se já tem seleção e bate o ID, marca ao renderizar (ex: após refresh)
-    if (selectedId && id === selectedId) {
+    if (currentSelectedId && id === currentSelectedId) {
       tr.classList.add("selected");
       selectedRowEl = tr;
     }
@@ -411,7 +414,7 @@ async function saveProduct(){
 async function deleteSelectedFromEstoque(){
   if (!selectedId) return alert("Selecione um item no estoque primeiro.");
 
-  const ok = confirm(`Deseja EXCLUIR (inativar) o item selecionado?\n\nPeça: ${selectedPeca}\nID: ${selectedId}`);
+  const ok = confirm(`Deseja EXCLUIR o item selecionado?\n\nPeça: ${selectedPeca}\nID: ${selectedId}\n\nObs: Isso vai INATIVAR (ATIVO=NAO).`);
   if (!ok) return;
 
   const r = await apiPost({ action:"deleteProduct", id: selectedId });
@@ -433,7 +436,7 @@ async function deleteFromCadastro(){
   if (!id) return alert("Selecione um item para excluir.");
 
   const peca = up(($("p_sku")?.value || ""));
-  const ok = confirm(`Deseja EXCLUIR (inativar) este item?\n\nPeça: ${peca}\nID: ${id}`);
+  const ok = confirm(`Deseja EXCLUIR este item?\n\nPeça: ${peca}\nID: ${id}\n\nObs: Isso vai INATIVAR (ATIVO=NAO).`);
   if (!ok) return;
 
   const r = await apiPost({ action:"deleteProduct", id });
@@ -540,7 +543,7 @@ async function loadProducts(){
   const r = await apiGet("listProducts");
   if (!r.ok) throw new Error(r.error);
 
-  // filtra inativos
+  // ✅ filtra inativos aqui
   PRODUCTS = (r.products || []).filter(p => up(p.ativo ?? "SIM") !== "NAO");
 
   renderProducts(PRODUCTS);
@@ -587,10 +590,10 @@ async function doLoginFromPage(){
     saveTokenSession(TOKEN);
 
     showOnly("app");
+    clearSelectionUI();
     await refreshAll();
     setView("estoque");
     setCadMode("LOCKED");
-    clearSelectionUI();
 
   } catch(err){
     TOKEN = "";
@@ -740,6 +743,7 @@ if (TOKEN) {
   showOnly("app");
   ping().then(async (ok) => {
     if (ok) {
+      clearSelectionUI();
       await refreshAll();
       setView("estoque");
       setCadMode("LOCKED");
