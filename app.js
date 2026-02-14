@@ -19,6 +19,7 @@ const norm  = (s) => String(s || "").toLowerCase().trim();
 
 function setStatus(ok, text) {
   const el = $("status");
+  if (!el) return;
   el.textContent = text;
   el.style.color = ok ? "#1b5e20" : "rgba(20,24,35,.65)";
   el.style.borderColor = ok ? "rgba(27,94,32,.35)" : "rgba(20,24,35,.12)";
@@ -73,19 +74,12 @@ function setView(view) {
     movimentacoes: "Movimentações",
     relatorios: "Relatórios"
   };
-  $("viewTitle").textContent = titles[view] || "Sistema";
+  const t = $("viewTitle");
+  if (t) t.textContent = titles[view] || "Sistema";
 
-  // Ações automáticas por tela (fica mais “ERP”)
   if (TOKEN) {
-    if (view === "estoque") {
-      // nada obrigatório, só garante que a lista existe
-      renderProducts(PRODUCTS);
-    }
-    if (view === "relatorios") {
-      // mostra vazio até gerar
-      // (não gera automático pra não confundir)
-      renderRel([]);
-    }
+    if (view === "estoque") renderProducts(PRODUCTS);
+    if (view === "relatorios") renderRel([]);
   }
 }
 
@@ -99,7 +93,10 @@ function wireMenu() {
 // RENDER PRODUTOS
 // =====================
 function renderProducts(list) {
-  const tb = $("tblProdutos").querySelector("tbody");
+  const table = $("tblProdutos");
+  if (!table) return;
+
+  const tb = table.querySelector("tbody");
   tb.innerHTML = "";
 
   list.forEach(p => {
@@ -111,6 +108,7 @@ function renderProducts(list) {
     if (est <= min) tr.classList.add("low");
     if (est <= 0) tr.classList.add("bad");
 
+    // ORDEM: SKU | Nome | Categoria | Marca | Estado | Atual | Mín | Preço | Local | Ativo
     tr.innerHTML = `
       <td>${p.sku ?? ""}</td>
       <td>${p.nome ?? ""}</td>
@@ -126,15 +124,16 @@ function renderProducts(list) {
 
     tr.addEventListener("click", () => {
       selectedSku = skuUp(p.sku || "");
-      $("selectedSku").textContent = selectedSku || "---";
+      const s = $("selectedSku");
+      if (s) s.textContent = selectedSku || "---";
 
-      // preenche o SKU na tela de movimentações
-      $("m_sku").value = selectedSku;
+      // SKU na tela de movimentações
+      if ($("m_sku")) $("m_sku").value = selectedSku;
 
-      // preenche no cadastro (pra editar rápido)
+      // Preenche no cadastro (pra editar rápido)
       fillProductForm(p);
-if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
-      // já mostra os movimentos filtrados
+
+      // Movimentos filtrados
       renderMovesFiltered();
     });
 
@@ -146,9 +145,9 @@ if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
 // FILTROS
 // =====================
 function applyFilters() {
-  const fsku = skuUp($("f_sku").value);
-  const fnome = norm($("f_nome").value);
-  const fcat = norm($("f_categoria").value);
+  const fsku = skuUp($("f_sku")?.value);
+  const fnome = norm($("f_nome")?.value);
+  const fcat = norm($("f_categoria")?.value);
 
   let list = PRODUCTS;
 
@@ -160,9 +159,9 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  $("f_sku").value = "";
-  $("f_nome").value = "";
-  $("f_categoria").value = "";
+  if ($("f_sku")) $("f_sku").value = "";
+  if ($("f_nome")) $("f_nome").value = "";
+  if ($("f_categoria")) $("f_categoria").value = "";
   renderProducts(PRODUCTS);
 }
 
@@ -170,7 +169,10 @@ function clearFilters() {
 // MOVIMENTOS
 // =====================
 function renderMoves(list) {
-  const tb = $("tblMoves").querySelector("tbody");
+  const table = $("tblMoves");
+  if (!table) return;
+
+  const tb = table.querySelector("tbody");
   tb.innerHTML = "";
 
   list.forEach(m => {
@@ -198,38 +200,46 @@ function renderMovesFiltered() {
 // CADASTRO
 // =====================
 function fillProductForm(p){
-  $("p_sku").value = p.sku || "";
-  $("p_nome").value = p.nome || "";
-  $("p_categoria").value = p.categoria || "";
-  $("p_marca").value = p.marca || "";
-  $("p_custo").value = p.custo || "";
-  $("p_preco").value = p.preco || "";
-  $("p_estoque").value = p.estoque || "";
-  $("p_minimo").value = p.minimo || "";
-  $("p_local").value = p.local || "";
-  $("p_ativo").value = (p.ativo || "SIM").toUpperCase();
+  if ($("p_sku")) $("p_sku").value = p.sku || "";
+  if ($("p_nome")) $("p_nome").value = p.nome || "";
+  if ($("p_categoria")) $("p_categoria").value = p.categoria || "";
+  if ($("p_marca")) $("p_marca").value = p.marca || "";
+
+  // NOVO: estado
+  if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
+
+  if ($("p_custo")) $("p_custo").value = p.custo || "";
+  if ($("p_preco")) $("p_preco").value = p.preco || "";
+  if ($("p_estoque")) $("p_estoque").value = p.estoque || "";
+  if ($("p_minimo")) $("p_minimo").value = p.minimo || "";
+  if ($("p_local")) $("p_local").value = p.local || "";
+  if ($("p_ativo")) $("p_ativo").value = (p.ativo || "SIM").toUpperCase();
 }
 
 function clearProductForm(){
-  ["p_sku","p_nome","p_categoria","p_marca","p_custo","p_preco","p_estoque","p_minimo","p_local"].forEach(id => $(id).value = "");
-  $("p_ativo").value = "SIM";
-  if ($("p_estado")) $("p_estado").value = "NOVA";
+  ["p_sku","p_nome","p_categoria","p_marca","p_custo","p_preco","p_estoque","p_minimo","p_local"]
+    .forEach(id => { if ($(id)) $(id).value = ""; });
 
+  if ($("p_ativo")) $("p_ativo").value = "SIM";
+  if ($("p_estado")) $("p_estado").value = "NOVA";
 }
 
 async function saveProduct(){
   const product = {
-    sku: skuUp($("p_sku").value),
-    nome: $("p_nome").value.trim(),
-    categoria: $("p_categoria").value.trim(),
+    sku: skuUp($("p_sku")?.value),
+    nome: ($("p_nome")?.value || "").trim(),
+    categoria: ($("p_categoria")?.value || "").trim(),
+    marca: ($("p_marca")?.value || "").trim(),
+
+    // estado tem que ir antes de custo/...
     estado: ($("p_estado")?.value || "NOVA").toUpperCase(),
-    marca: $("p_marca").value.trim(),
-    custo: $("p_custo").value.trim(),
-    preco: $("p_preco").value.trim(),
-    estoque: $("p_estoque").value.trim(),
-    minimo: $("p_minimo").value.trim(),
-    local: $("p_local").value.trim(),
-    ativo: ($("p_ativo").value || "SIM").toUpperCase()
+
+    custo: ($("p_custo")?.value || "").trim(),
+    preco: ($("p_preco")?.value || "").trim(),
+    estoque: ($("p_estoque")?.value || "").trim(),
+    minimo: ($("p_minimo")?.value || "").trim(),
+    local: ($("p_local")?.value || "").trim(),
+    ativo: (($("p_ativo")?.value || "SIM")).toUpperCase()
   };
 
   if (!product.sku) return alert("SKU é obrigatório.");
@@ -247,11 +257,11 @@ async function saveProduct(){
 // =====================
 async function moveStock(){
   const move = {
-    tipo: $("m_tipo").value,
-    sku: skuUp($("m_sku").value),
-    quantidade: $("m_qtd").value.trim(),
-    obs: $("m_obs").value.trim(),
-    usuario: $("m_usuario").value.trim() || "JB"
+    tipo: $("m_tipo")?.value,
+    sku: skuUp($("m_sku")?.value),
+    quantidade: ($("m_qtd")?.value || "").trim(),
+    obs: ($("m_obs")?.value || "").trim(),
+    usuario: ($("m_usuario")?.value || "").trim() || "JB"
   };
 
   if (!move.sku) return alert("SKU é obrigatório.");
@@ -263,10 +273,10 @@ async function moveStock(){
   alert(`${r.message}\nSKU: ${r.sku}\nAntes: ${r.estoque_anterior}\nAgora: ${r.estoque_novo}`);
 
   selectedSku = move.sku;
-  $("selectedSku").textContent = selectedSku;
+  if ($("selectedSku")) $("selectedSku").textContent = selectedSku;
 
-  $("m_qtd").value = "";
-  $("m_obs").value = "";
+  if ($("m_qtd")) $("m_qtd").value = "";
+  if ($("m_obs")) $("m_obs").value = "";
 
   await refreshAll();
   setView("estoque");
@@ -276,16 +286,22 @@ async function moveStock(){
 // RELATÓRIOS
 // =====================
 function renderRel(list){
-  const tb = $("tblRel").querySelector("tbody");
+  const table = $("tblRel");
+  if (!table) return;
+
+  const tb = table.querySelector("tbody");
   tb.innerHTML = "";
+
   list.forEach(p => {
     const tr = document.createElement("tr");
+
+    // ORDEM: SKU | Nome | Categoria | Estado | Estoque | Mín | Preço | Local
     tr.innerHTML = `
       <td>${p.sku ?? ""}</td>
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
-      <td>${p.estoque ?? 0}</td>
       <td>${p.estado ?? ""}</td>
+      <td>${p.estoque ?? 0}</td>
       <td>${p.minimo ?? 0}</td>
       <td>${money(p.preco)}</td>
       <td>${p.local ?? ""}</td>
@@ -318,14 +334,16 @@ async function ping(){
 async function loadProducts(){
   const r = await apiGet("listProducts");
   if (!r.ok) throw new Error(r.error);
+
   PRODUCTS = r.products || [];
   renderProducts(PRODUCTS);
 }
 
 async function loadMoves(){
-  const limit = $("movLimit").value || "50";
+  const limit = ($("movLimit")?.value || "50");
   const r = await apiGet("listMoves", { limit });
   if (!r.ok) throw new Error(r.error);
+
   MOVES_ALL = r.moves || [];
   renderMovesFiltered();
 }
@@ -339,8 +357,8 @@ async function refreshAll(){
 // EVENTOS
 // =====================
 function wireActions(){
-  $("btnLogin").addEventListener("click", async () => {
-    TOKEN = $("token").value.trim();
+  $("btnLogin")?.addEventListener("click", async () => {
+    TOKEN = ($("token")?.value || "").trim();
     if (!TOKEN) return alert("Digite a senha.");
 
     const ok = await ping();
@@ -354,71 +372,71 @@ function wireActions(){
     }
   });
 
-  $("btnRefreshAll").addEventListener("click", async () => {
+  $("btnRefreshAll")?.addEventListener("click", async () => {
     if (!TOKEN) return alert("Entre primeiro.");
     try{ await refreshAll(); } catch(e){ alert(e.message || String(e)); }
   });
 
-  $("btnFiltrar").addEventListener("click", () => {
+  $("btnFiltrar")?.addEventListener("click", () => {
     if (!TOKEN) return alert("Entre primeiro.");
     applyFilters();
   });
 
-  $("btnLimparFiltro").addEventListener("click", () => {
+  $("btnLimparFiltro")?.addEventListener("click", () => {
     clearFilters();
   });
 
-  $("btnItensEmFalta").addEventListener("click", () => {
+  $("btnItensEmFalta")?.addEventListener("click", () => {
     if (!TOKEN) return alert("Entre primeiro.");
     const list = PRODUCTS.filter(p => Number(p.estoque||0) <= Number(p.minimo||0));
     renderProducts(list);
   });
 
-  $("btnVerTodos").addEventListener("click", () => {
+  $("btnVerTodos")?.addEventListener("click", () => {
     renderProducts(PRODUCTS);
   });
 
-  $("btnLoadMoves").addEventListener("click", async () => {
+  $("btnLoadMoves")?.addEventListener("click", async () => {
     if (!TOKEN) return alert("Entre primeiro.");
     try{ await loadMoves(); } catch(e){ alert(e.message || String(e)); }
   });
 
-  $("btnSalvarProduto").addEventListener("click", async () => {
+  $("btnSalvarProduto")?.addEventListener("click", async () => {
     if (!TOKEN) return alert("Entre primeiro.");
     try{ await saveProduct(); } catch(e){ alert(e.message || String(e)); }
   });
 
-  $("btnLimparProduto").addEventListener("click", clearProductForm);
+  $("btnLimparProduto")?.addEventListener("click", clearProductForm);
 
-  $("btnNovoProduto").addEventListener("click", () => {
+  $("btnNovoProduto")?.addEventListener("click", () => {
     clearProductForm();
-    $("p_sku").focus();
+    $("p_sku")?.focus();
   });
 
-  $("btnRegistrarMov").addEventListener("click", async () => {
+  $("btnRegistrarMov")?.addEventListener("click", async () => {
     if (!TOKEN) return alert("Entre primeiro.");
     try{ await moveStock(); } catch(e){ alert(e.message || String(e)); }
   });
 
-  $("btnLimparMov").addEventListener("click", () => {
-    $("m_tipo").value = "ENTRADA";
-    $("m_sku").value = selectedSku || "";
-    $("m_qtd").value = "";
-    $("m_obs").value = "";
-    $("m_usuario").value = "";
+  $("btnLimparMov")?.addEventListener("click", () => {
+    if ($("m_tipo")) $("m_tipo").value = "ENTRADA";
+    if ($("m_sku")) $("m_sku").value = selectedSku || "";
+    if ($("m_qtd")) $("m_qtd").value = "";
+    if ($("m_obs")) $("m_obs").value = "";
+    if ($("m_usuario")) $("m_usuario").value = "";
   });
 
-  $("btnRelMinimo").addEventListener("click", () => {
+  $("btnRelMinimo")?.addEventListener("click", () => {
     if (!TOKEN) return alert("Entre primeiro.");
     relMinimo();
   });
 
-  $("btnRelZerados").addEventListener("click", () => {
+  $("btnRelZerados")?.addEventListener("click", () => {
     if (!TOKEN) return alert("Entre primeiro.");
     relZerados();
   });
 
-  $("btnRelLimpar").addEventListener("click", () => {
+  $("btnRelLimpar")?.addEventListener("click", () => {
     renderRel([]);
   });
 }
