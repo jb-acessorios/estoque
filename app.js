@@ -121,6 +121,7 @@ function renderProducts(list) {
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
       <td>${p.marca ?? ""}</td>
+      <td>${p.modelo ?? ""}</td>
       <td>${p.estado ?? ""}</td>
       <td>${p.estoque ?? 0}</td>
       <td>${p.minimo ?? 0}</td>
@@ -207,6 +208,7 @@ function fillProductForm(p){
   if ($("p_nome")) $("p_nome").value = p.nome || "";
   if ($("p_categoria")) $("p_categoria").value = p.categoria || "";
   if ($("p_marca")) $("p_marca").value = p.marca || "";
+  if ($("p_modelo")) $("p_modelo").value = p.modelo || "";
   if ($("p_estado")) $("p_estado").value = (p.estado || "NOVA").toUpperCase();
   if ($("p_custo")) $("p_custo").value = p.custo || "";
   if ($("p_preco")) $("p_preco").value = p.preco || "";
@@ -217,7 +219,7 @@ function fillProductForm(p){
 }
 
 function clearProductForm(){
-  ["p_sku","p_nome","p_categoria","p_marca","p_custo","p_preco","p_estoque","p_minimo","p_local"]
+  ["p_sku","p_nome","p_categoria","p_marca","p_modelo","p_custo","p_preco","p_estoque","p_minimo","p_local"]
     .forEach(id => { if ($(id)) $(id).value = ""; });
 
   if ($("p_ativo")) $("p_ativo").value = "SIM";
@@ -230,6 +232,7 @@ async function saveProduct(){
     nome: ($("p_nome")?.value || "").trim(),
     categoria: ($("p_categoria")?.value || "").trim(),
     marca: ($("p_marca")?.value || "").trim(),
+    modelo: ($("p_modelo")?.value || "").trim(),
     estado: ($("p_estado")?.value || "NOVA").toUpperCase(),
     custo: ($("p_custo")?.value || "").trim(),
     preco: ($("p_preco")?.value || "").trim(),
@@ -239,7 +242,7 @@ async function saveProduct(){
     ativo: (($("p_ativo")?.value || "SIM")).toUpperCase()
   };
 
-  if (!product.sku) return alert("SKU é obrigatório.");
+  if (!product.sku) return alert("Peça é obrigatória.");
 
   const r = await apiPost({ action:"upsertProduct", product });
   if (!r.ok) return alert(r.error);
@@ -261,13 +264,13 @@ async function moveStock(){
     usuario: ($("m_usuario")?.value || "").trim() || "JB"
   };
 
-  if (!move.sku) return alert("SKU é obrigatório.");
+  if (!move.sku) return alert("Peça é obrigatória.");
   if (!move.quantidade) return alert("Quantidade é obrigatória.");
 
   const r = await apiPost({ action:"moveStock", move });
   if (!r.ok) return alert(r.error);
 
-  alert(`${r.message}\nSKU: ${r.sku}\nAntes: ${r.estoque_anterior}\nAgora: ${r.estoque_novo}`);
+  alert(`${r.message}\nPeça: ${r.sku}\nAntes: ${r.estoque_anterior}\nAgora: ${r.estoque_novo}`);
 
   selectedSku = move.sku;
   if ($("selectedSku")) $("selectedSku").textContent = selectedSku;
@@ -295,6 +298,7 @@ function renderRel(list){
       <td>${p.sku ?? ""}</td>
       <td>${p.nome ?? ""}</td>
       <td>${p.categoria ?? ""}</td>
+      <td>${p.modelo ?? ""}</td>
       <td>${p.estado ?? ""}</td>
       <td>${p.estoque ?? 0}</td>
       <td>${p.minimo ?? 0}</td>
@@ -393,7 +397,6 @@ function doLogout(){
   selectedSku = "";
   clearTokenSession();
 
-  // limpa telas
   renderProducts([]);
   renderMoves([]);
   renderRel([]);
@@ -492,7 +495,6 @@ wireActions();
 // tenta auto-login
 TOKEN = loadTokenSession();
 if (TOKEN) {
-  // mostra app e valida token
   showOnly("app");
   ping().then(async (ok) => {
     if (ok) {
