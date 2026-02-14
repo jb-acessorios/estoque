@@ -1,12 +1,17 @@
-// ===============================
-// JB ACESSÓRIOS - Sistema básico com ABAS
-// ===============================
+// ==========================================
+// JB ACESSÓRIOS - UI estilo “sistema” + abas por ícone
+// Google Sheets (Apps Script) como backend
+// ==========================================
 
+// 1) COLE A URL DO SEU WEB APP AQUI
 const API_URL = "COLE_AQUI_A_URL_DO_WEB_APP";
 
 let TOKEN = "";
 let PRODUCTS = [];
+let MOVES_ALL = [];
+let selectedSku = "";
 
+// helpers
 const $ = (id) => document.getElementById(id);
 const skuUp = (s) => String(s||"").trim().toUpperCase();
 const norm  = (s) => String(s||"").toLowerCase().trim();
@@ -41,33 +46,41 @@ async function apiPost(payload){
   return r.json();
 }
 
-// ===== ABAS =====
-function setTab(tabName){
-  document.querySelectorAll(".tab").forEach(b => {
-    b.classList.toggle("active", b.dataset.tab === tabName);
+// ===== Navegação por “abas” (ícones) =====
+function setView(view){
+  document.querySelectorAll(".iconbtn").forEach(b => {
+    b.classList.toggle("active", b.dataset.view === view);
   });
-  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-  const panel = document.getElementById(`tab-${tabName}`);
-  if (panel) panel.classList.add("active");
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  const el = document.getElementById(`view-${view}`);
+  if (el) el.classList.add("active");
+
+  const titles = {
+    estoque: "Controle de estoque",
+    cadastros: "Cadastros",
+    movimentacoes: "Movimentações",
+    relatorios: "Relatórios"
+  };
+  $("viewTitle").textContent = titles[view] || "Sistema";
 }
 
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", () => setTab(btn.dataset.tab));
+document.querySelectorAll(".iconbtn").forEach(btn => {
+  btn.addEventListener("click", () => setView(btn.dataset.view));
 });
 
-// ===== PRODUTOS =====
+// ===== Render Produtos =====
 function renderProducts(list){
-  const tb = $("tbl").querySelector("tbody");
+  const tb = $("tblProdutos").querySelector("tbody");
   tb.innerHTML = "";
 
   list.forEach(p => {
     const tr = document.createElement("tr");
 
-    const estoque = Number(p.estoque || 0);
-    const minimo  = Number(p.minimo  || 0);
+    const est = Number(p.estoque || 0);
+    const min = Number(p.minimo || 0);
 
-    if (estoque <= minimo) tr.classList.add("low");
-    if (estoque <= 0) tr.classList.add("bad");
+    if (est <= min) tr.classList.add("low");
+    if (est <= 0) tr.classList.add("bad");
 
     tr.innerHTML = `
       <td>${p.sku ?? ""}</td>
@@ -75,15 +88,22 @@ function renderProducts(list){
       <td>${p.categoria ?? ""}</td>
       <td>${p.marca ?? ""}</td>
       <td>${p.estoque ?? 0}</td>
-      <td>${p.minimo ?? 0}</td>
       <td>${money(p.preco)}</td>
       <td>${p.local ?? ""}</td>
       <td>${p.ativo ?? ""}</td>
     `;
 
     tr.addEventListener("click", () => {
+      selectedSku = skuUp(p.sku || "");
+      $("selectedSku").textContent = selectedSku || "---";
+      // preenche também a movimentação
+      $("m_sku").value = selectedSku;
+      // preenche também o cadastro
       fillProductForm(p);
-      setTab("produtos");
+      // carrega movimentos filtrados
+      renderMovesFiltered();
+      // mantém na tela estoque
+      setView("estoque");
     });
 
     tb.appendChild(tr);
@@ -101,9 +121,6 @@ function fillProductForm(p){
   $("p_minimo").value = p.minimo || "";
   $("p_local").value = p.local || "";
   $("p_ativo").value = (p.ativo || "SIM").toUpperCase();
-
-  // já joga sku pra movimentar
-  $("m_sku").value = p.sku || "";
 }
 
 function clearProductForm(){
@@ -111,22 +128,101 @@ function clearProductForm(){
   $("p_ativo").value = "SIM";
 }
 
-function applyFilter(){
-  const q = norm($("search").value);
-  const filtered = !q ? PRODUCTS : PRODUCTS.filter(p => {
-    const bag = `${p.sku} ${p.nome} ${p.categoria} ${p.marca} ${p.local} ${p.ativo}`.toLowerCase();
-    return bag.includes(q);
+// ===== Filtros =====
+function applyFilters(){
+  const fsku = skuUp($("f_sku").value);
+  const fnome = norm($("f_nome").value);
+  const fcat = norm($("f_categoria").value);
+
+  let list = PRODUCTS;
+
+  if (fsku) list = list.filter(p => skuUp(p.sku).includes(fsku));
+  if (fnome) list = list.filter(p => norm(p.nome).includes(fnome));
+  if (fcat) list = list.filter(p => norm(p.categoria).includes(fcat));
+
+  renderProducts(list);
+}
+
+function clearFilters(){
+  $("f_sku").value = "";
+  $("f_nome").value = "";
+  $("f_categoria").value = "";
+  renderProducts(PRODUCTS);
+}
+
+// ===== Movimentos =====
+function renderMoves(list){
+  const tb = $("tblMoves").querySelector("tbody");
+  tb.innerHTML = "";
+
+  list.forEach(m => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${m.data || ""}</td>
+      <td>${m.tipo || ""}</td>
+      <td>${m.sku || ""}</td>
+      <td>${m.quantidade || ""}</td>
+      <td>${m.obs || ""}</td>
+      <td>${m.usuario || ""}</td>
+    `;
+    tb.appendChild(tr);
   });
-  renderProducts(filtered);
+}
+
+function renderMovesFiltered(){
+  if (!MOVES_ALL.length) return renderMoves([]);
+  const sku = skuUp(selectedSku);
+  const filtered = sku ? MOVES_ALL.filter(m => skuUp(m.sku) === sku) : MOVES_ALL;
+  renderMoves(filtered);
+}
+
+// ===== Relatórios =====
+function renderRel(list){
+  const tb = $("tblRel").querySelector("tbody");
+  tb.innerHTML = "";
+  list.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.sku ?? ""}</td>
+      <td>${p.nome ?? ""}</td>
+      <td>${p.categoria ?? ""}</td>
+      <td>${p.estoque ?? 0}</td>
+      <td>${p.minimo ?? 0}</td>
+      <td>${money(p.preco)}</td>
+      <td>${p.local ?? ""}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+// ===== Loaders =====
+async function ping(){
+  const r = await apiGet("ping");
+  setStatus(r.ok, r.ok ? "online" : "offline");
+  return r.ok;
 }
 
 async function loadProducts(){
   const r = await apiGet("listProducts");
   if (!r.ok) return alert(r.error);
   PRODUCTS = r.products || [];
-  applyFilter();
+  renderProducts(PRODUCTS);
 }
 
+async function loadMoves(){
+  const limit = $("movLimit").value || "50";
+  const r = await apiGet("listMoves", { limit });
+  if (!r.ok) return alert(r.error);
+  MOVES_ALL = r.moves || [];
+  renderMovesFiltered();
+}
+
+async function refreshAll(){
+  await loadProducts();
+  await loadMoves();
+}
+
+// ===== Ações: Cadastros =====
 async function saveProduct(){
   const product = {
     sku: skuUp($("p_sku").value),
@@ -150,7 +246,7 @@ async function saveProduct(){
   await loadProducts();
 }
 
-// ===== MOVIMENTAR =====
+// ===== Ações: Movimentações =====
 async function moveStock(){
   const move = {
     tipo: $("m_tipo").value,
@@ -168,45 +264,16 @@ async function moveStock(){
 
   alert(`${r.message}\nSKU: ${r.sku}\nAntes: ${r.estoque_anterior}\nAgora: ${r.estoque_novo}`);
 
+  selectedSku = move.sku;
+  $("selectedSku").textContent = selectedSku;
+
   $("m_qtd").value = "";
   $("m_obs").value = "";
 
-  await loadProducts();
+  await refreshAll();
 }
 
-// ===== MOVIMENTOS =====
-function renderMoves(moves){
-  const tb = $("tblMoves").querySelector("tbody");
-  tb.innerHTML = "";
-
-  moves.forEach(m => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${m.data || ""}</td>
-      <td>${m.tipo || ""}</td>
-      <td>${m.sku || ""}</td>
-      <td>${m.quantidade || ""}</td>
-      <td>${m.obs || ""}</td>
-      <td>${m.usuario || ""}</td>
-    `;
-    tb.appendChild(tr);
-  });
-}
-
-async function loadMoves(){
-  const limit = $("movLimit").value || "50";
-  const r = await apiGet("listMoves", { limit });
-  if (!r.ok) return alert(r.error);
-  renderMoves(r.moves || []);
-}
-
-// ===== LOGIN =====
-async function ping(){
-  const r = await apiGet("ping");
-  setStatus(r.ok, r.ok ? "online" : "offline");
-  return r.ok;
-}
-
+// ===== Eventos =====
 $("btnLogin").addEventListener("click", async () => {
   TOKEN = $("token").value.trim();
   if (!TOKEN) return alert("Digite a senha.");
@@ -214,20 +281,48 @@ $("btnLogin").addEventListener("click", async () => {
   const ok = await ping();
   if (!ok) return alert("Senha inválida ou API offline.");
 
-  await loadProducts();
-  await loadMoves();
+  await refreshAll();
 });
 
-// ===== EVENTOS UI =====
-$("btnReload").addEventListener("click", loadProducts);
-$("btnQuickReload").addEventListener("click", loadProducts);
-$("search").addEventListener("input", applyFilter);
+$("btnRefreshAll").addEventListener("click", refreshAll);
 
-$("btnSaveProduct").addEventListener("click", saveProduct);
-$("btnClearProduct").addEventListener("click", clearProductForm);
+$("btnFiltrar").addEventListener("click", applyFilters);
+$("btnLimparFiltro").addEventListener("click", clearFilters);
 
-$("btnMove").addEventListener("click", moveStock);
+$("btnItensEmFalta").addEventListener("click", () => {
+  const list = PRODUCTS.filter(p => Number(p.estoque||0) <= Number(p.minimo||0));
+  renderProducts(list);
+});
+
 $("btnLoadMoves").addEventListener("click", loadMoves);
 
-// inicia na aba Produtos
-setTab("produtos");
+$("btnSalvarProduto").addEventListener("click", saveProduct);
+$("btnLimparProduto").addEventListener("click", clearProductForm);
+$("btnNovoProduto").addEventListener("click", () => {
+  clearProductForm();
+  $("p_sku").focus();
+});
+
+$("btnRegistrarMov").addEventListener("click", moveStock);
+$("btnLimparMov").addEventListener("click", () => {
+  $("m_tipo").value = "ENTRADA";
+  $("m_sku").value = selectedSku || "";
+  $("m_qtd").value = "";
+  $("m_obs").value = "";
+  $("m_usuario").value = "";
+});
+
+$("btnRelMinimo").addEventListener("click", () => {
+  const list = PRODUCTS.filter(p => Number(p.estoque||0) <= Number(p.minimo||0));
+  renderRel(list);
+  setView("relatorios");
+});
+
+$("btnRelZerados").addEventListener("click", () => {
+  const list = PRODUCTS.filter(p => Number(p.estoque||0) <= 0);
+  renderRel(list);
+  setView("relatorios");
+});
+
+// inicia
+setView("estoque");
