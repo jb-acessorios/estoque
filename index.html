@@ -13,8 +13,10 @@
     <div class="login-wrap">
       <div class="login-card">
         <div class="login-brand">
-          <img class="login-logo-img" src="assets/images/logo-jb.png" alt="JB" onerror="this.style.display='none'">
-          <div class="login-logo-fallback">JB</div>
+          <!-- ✅ LOGO REAL -->
+          <img class="login-logo-img" src="assets/images/logo-jb.jpg" alt="JB"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="login-logo-fallback" style="display:none;">JB</div>
 
           <div>
             <h1>JB ACESSÓRIOS</h1>
@@ -38,7 +40,13 @@
   <section id="view-app" class="view">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">JB</div>
+        <!-- ✅ LOGO REAL NO TOPO -->
+        <img class="brand-logo" src="assets/images/logo-jb.jpg" alt="JB"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+        <!-- fallback (se a imagem não carregar) -->
+        <div class="brand-mark" style="display:none;">JB</div>
+
         <div class="brand-text">
           <div class="brand-title">JB ACESSÓRIOS</div>
           <div class="brand-sub">Controle de Estoque</div>
@@ -90,8 +98,6 @@
             <div class="card-actions">
               <button id="btnItensEmFalta" class="btn" type="button">Itens em falta</button>
               <button id="btnVerTodos" class="btn-outline" type="button">Ver todos</button>
-
-              <!-- ✅ NOVO: EXCLUIR no ESTOQUE -->
               <button id="btnExcluirEstoque" class="btn-outline" type="button" disabled>Excluir selecionado</button>
             </div>
           </div>
@@ -136,7 +142,7 @@
             </table>
           </div>
 
-          <p class="hint">JB Acessorios @.</p>
+          <p class="hint">JB Acessórios @.</p>
         </div>
       </section>
 
@@ -222,7 +228,6 @@
             <div class="form-actions">
               <button id="btnSalvarProduto" class="btn" type="button">Salvar</button>
               <button id="btnLimparProduto" class="btn-outline" type="button">Limpar</button>
-              <!-- (opcional manter aqui, mas o principal agora está no estoque) -->
               <button id="btnExcluirProduto" class="btn-outline" type="button" disabled>Excluir</button>
             </div>
           </div>
