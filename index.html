@@ -8,170 +8,133 @@
 </head>
 <body>
 
+  <!-- TOP BAR (estilo sistema) -->
   <header class="topbar">
-    <div class="brand">
-      <img src="assets/images/logo-jb.jpg" alt="JB ACESSÓRIOS">
-      <div class="brandText">
-        <div class="brandTitle">JB ACESSÓRIOS</div>
-        <div class="brandSub">Controle de estoque (básico) • Google Sheets</div>
+    <div class="topbar-left">
+      <div class="brand">
+        <img class="brand-logo" src="assets/images/logo-jb.jpg" alt="JB" onerror="this.style.display='none'">
+        <div class="brand-text">
+          <div class="brand-title">JB ACESSÓRIOS</div>
+          <div class="brand-sub">Controle de Estoque (básico)</div>
+        </div>
+      </div>
+
+      <div class="auth">
+        <input id="token" type="password" placeholder="Senha" />
+        <button id="btnLogin">Entrar</button>
+        <span id="status" class="pill">offline</span>
       </div>
     </div>
 
-    <div class="loginBox">
-      <input id="token" type="password" placeholder="Senha (API)" />
-      <button id="btnLogin">Entrar</button>
-      <span id="status" class="status">offline</span>
-    </div>
+    <!-- ICON MENU -->
+    <nav class="iconbar">
+      <button class="iconbtn active" data-view="estoque" title="Estoque">
+        <span class="ico">📦</span>
+        <span class="txt">Estoque</span>
+      </button>
+
+      <button class="iconbtn" data-view="cadastros" title="Cadastros">
+        <span class="ico">📝</span>
+        <span class="txt">Cadastros</span>
+      </button>
+
+      <button class="iconbtn" data-view="movimentacoes" title="Movimentações">
+        <span class="ico">🔁</span>
+        <span class="txt">Movimentações</span>
+      </button>
+
+      <button class="iconbtn" data-view="relatorios" title="Relatórios">
+        <span class="ico">📊</span>
+        <span class="txt">Relatórios</span>
+      </button>
+    </nav>
   </header>
 
-  <nav class="tabs">
-    <button class="tab active" data-tab="produtos">Produtos</button>
-    <button class="tab" data-tab="movimentar">Movimentar</button>
-    <button class="tab" data-tab="movimentos">Movimentos</button>
-  </nav>
+  <!-- SUBBAR -->
+  <div class="subbar">
+    <div class="subbar-title" id="viewTitle">Controle de estoque</div>
+    <div class="subbar-actions">
+      <button id="btnRefreshAll">Atualizar</button>
+    </div>
+  </div>
 
-  <main class="content">
+  <main class="app">
 
-    <!-- ABA: PRODUTOS -->
-    <section class="panel active" id="tab-produtos">
-      <div class="panelHeader">
-        <h2>Cadastro de Produtos</h2>
-        <div class="panelActions">
-          <input id="search" placeholder="Buscar por SKU / nome / categoria..." />
-          <button id="btnReload">Recarregar</button>
+    <!-- ==========================
+         VIEW: ESTOQUE (tela principal)
+    =========================== -->
+    <section class="view active" id="view-estoque">
+
+      <!-- filtros (estilo referência) -->
+      <div class="filters">
+        <div class="field">
+          <label>Código (SKU)</label>
+          <input id="f_sku" placeholder="Ex: CABO-UGREEN-USBC-1M-V01" />
+        </div>
+
+        <div class="field">
+          <label>Descrição (Nome)</label>
+          <input id="f_nome" placeholder="Ex: Cabo USB-C" />
+        </div>
+
+        <div class="field">
+          <label>Categoria</label>
+          <input id="f_categoria" placeholder="Ex: CABO / CAPA / FONE" />
+        </div>
+
+        <div class="field field-actions">
+          <label>&nbsp;</label>
+          <button id="btnFiltrar" class="primary">Pesquisar</button>
+          <button id="btnLimparFiltro">Limpar</button>
         </div>
       </div>
 
-      <div class="split">
-        <div class="card">
-          <h3>Lista</h3>
-          <div class="tableWrap">
-            <table id="tbl">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Nome</th>
-                  <th>Categoria</th>
-                  <th>Marca</th>
-                  <th>Estoque</th>
-                  <th>Mín.</th>
-                  <th>Preço</th>
-                  <th>Local</th>
-                  <th>Ativo</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div class="hint">
-            Clique em um item para editar. <span class="low">baixo</span> | <span class="bad">zerado</span>
+      <!-- grade superior: produtos -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Produtos</div>
+          <div class="panel-buttons">
+            <button id="btnItensEmFalta">Itens em falta</button>
           </div>
         </div>
 
-        <div class="card">
-          <h3>Novo / Editar</h3>
-          <div class="formGrid">
-            <label>SKU (manual)</label>
-            <input id="p_sku" placeholder="EX: CABO-UGREEN-USBC-1M-V01" />
-
-            <label>Nome</label>
-            <input id="p_nome" placeholder="Nome do produto" />
-
-            <label>Categoria</label>
-            <input id="p_categoria" placeholder="CABO, CAPA, FONE..." />
-
-            <label>Marca</label>
-            <input id="p_marca" placeholder="UGREEN, JBL, APPLE..." />
-
-            <label>Custo</label>
-            <input id="p_custo" placeholder="12,50" />
-
-            <label>Preço</label>
-            <input id="p_preco" placeholder="29,90" />
-
-            <label>Estoque</label>
-            <input id="p_estoque" placeholder="20" />
-
-            <label>Mínimo</label>
-            <input id="p_minimo" placeholder="5" />
-
-            <label>Local</label>
-            <input id="p_local" placeholder="Prateleira A1" />
-
-            <label>Ativo</label>
-            <select id="p_ativo">
-              <option value="SIM">SIM</option>
-              <option value="NAO">NÃO</option>
-            </select>
-
-            <button id="btnSaveProduct" class="primary">Salvar</button>
-            <button id="btnClearProduct">Limpar</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ABA: MOVIMENTAR -->
-    <section class="panel" id="tab-movimentar">
-      <div class="panelHeader">
-        <h2>Entrada / Saída / Ajuste</h2>
-        <div class="panelActions">
-          <button id="btnQuickReload">Atualizar estoque</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="formRow">
-          <div>
-            <label>Tipo</label>
-            <select id="m_tipo">
-              <option>ENTRADA</option>
-              <option>SAIDA</option>
-              <option>AJUSTE</option>
-            </select>
-          </div>
-
-          <div>
-            <label>SKU</label>
-            <input id="m_sku" placeholder="SKU do produto" />
-          </div>
-
-          <div>
-            <label>Quantidade</label>
-            <input id="m_qtd" placeholder="Ex: 10 (AJUSTE = estoque final)" />
-          </div>
-
-          <div>
-            <label>Usuário</label>
-            <input id="m_usuario" placeholder="Ex: Luziano" />
-          </div>
-        </div>
-
-        <label>Observação</label>
-        <input id="m_obs" placeholder="Ex: venda balcão / assistência / compra fornecedor" />
-
-        <div class="actions">
-          <button id="btnMove" class="primary">Registrar Movimento</button>
+        <div class="gridwrap">
+          <table id="tblProdutos">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Marca</th>
+                <th>Atual</th>
+                <th>Preço</th>
+                <th>Local</th>
+                <th>Ativo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
 
         <div class="hint">
-          ENTRADA soma • SAÍDA subtrai • AJUSTE define o estoque final.
+          Clique no produto para ver movimentos e preencher o SKU nas movimentações.
+          <span class="low">baixo</span> <span class="bad">zerado</span>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ABA: MOVIMENTOS -->
-    <section class="panel" id="tab-movimentos">
-      <div class="panelHeader">
-        <h2>Histórico de Movimentos</h2>
-        <div class="panelActions">
-          <input id="movLimit" value="50" />
-          <button id="btnLoadMoves">Carregar</button>
+      <!-- grade inferior: movimentos do SKU selecionado -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            Movimentos do produto: <span id="selectedSku" class="mono">---</span>
+          </div>
+          <div class="panel-buttons">
+            <input id="movLimit" value="50" class="small" />
+            <button id="btnLoadMoves">Carregar</button>
+          </div>
         </div>
-      </div>
 
-      <div class="card">
-        <div class="tableWrap">
+        <div class="gridwrap">
           <table id="tblMoves">
             <thead>
               <tr>
@@ -186,7 +149,163 @@
             <tbody></tbody>
           </table>
         </div>
-      </div>
+      </section>
+
+    </section>
+
+    <!-- ==========================
+         VIEW: CADASTROS
+    =========================== -->
+    <section class="view" id="view-cadastros">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Cadastro de Produto</div>
+          <div class="panel-buttons">
+            <button id="btnNovoProduto">Novo</button>
+          </div>
+        </div>
+
+        <div class="formgrid">
+          <div class="field">
+            <label>SKU (manual)</label>
+            <input id="p_sku" placeholder="EX: CABO-UGREEN-USBC-1M-V01" />
+          </div>
+          <div class="field">
+            <label>Nome</label>
+            <input id="p_nome" placeholder="Descrição do produto" />
+          </div>
+          <div class="field">
+            <label>Categoria</label>
+            <input id="p_categoria" placeholder="CABO / CAPA / FONE ..." />
+          </div>
+          <div class="field">
+            <label>Marca</label>
+            <input id="p_marca" placeholder="UGREEN / JBL / APPLE ..." />
+          </div>
+
+          <div class="field">
+            <label>Custo</label>
+            <input id="p_custo" placeholder="12,50" />
+          </div>
+          <div class="field">
+            <label>Preço</label>
+            <input id="p_preco" placeholder="29,90" />
+          </div>
+
+          <div class="field">
+            <label>Estoque atual</label>
+            <input id="p_estoque" placeholder="20" />
+          </div>
+          <div class="field">
+            <label>Estoque mínimo</label>
+            <input id="p_minimo" placeholder="5" />
+          </div>
+
+          <div class="field">
+            <label>Local</label>
+            <input id="p_local" placeholder="Prateleira A1" />
+          </div>
+          <div class="field">
+            <label>Ativo</label>
+            <select id="p_ativo">
+              <option value="SIM">SIM</option>
+              <option value="NAO">NÃO</option>
+            </select>
+          </div>
+
+          <div class="field field-actions wide">
+            <button id="btnSalvarProduto" class="primary">Salvar</button>
+            <button id="btnLimparProduto">Limpar</button>
+          </div>
+        </div>
+
+        <div class="hint">
+          SKU sempre em MAIÚSCULO (o sistema força automaticamente).
+        </div>
+      </section>
+    </section>
+
+    <!-- ==========================
+         VIEW: MOVIMENTAÇÕES
+    =========================== -->
+    <section class="view" id="view-movimentacoes">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Entrada / Saída / Ajuste</div>
+        </div>
+
+        <div class="formgrid">
+          <div class="field">
+            <label>Tipo</label>
+            <select id="m_tipo">
+              <option>ENTRADA</option>
+              <option>SAIDA</option>
+              <option>AJUSTE</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>SKU</label>
+            <input id="m_sku" placeholder="Cole o SKU ou clique um produto no estoque" />
+          </div>
+
+          <div class="field">
+            <label>Quantidade</label>
+            <input id="m_qtd" placeholder="10 (AJUSTE = estoque final)" />
+          </div>
+
+          <div class="field">
+            <label>Usuário</label>
+            <input id="m_usuario" placeholder="Ex: Luziano" />
+          </div>
+
+          <div class="field wide">
+            <label>Observação</label>
+            <input id="m_obs" placeholder="Ex: Venda balcão / Compra fornecedor / Assistência" />
+          </div>
+
+          <div class="field field-actions wide">
+            <button id="btnRegistrarMov" class="primary">Registrar</button>
+            <button id="btnLimparMov">Limpar</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ==========================
+         VIEW: RELATÓRIOS (básico)
+    =========================== -->
+    <section class="view" id="view-relatorios">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Relatórios</div>
+        </div>
+
+        <div class="report-cards">
+          <div class="report">
+            <div class="report-title">Itens abaixo do mínimo</div>
+            <div class="report-desc">Lista produtos com estoque menor ou igual ao mínimo.</div>
+            <button id="btnRelMinimo" class="primary">Gerar</button>
+          </div>
+
+          <div class="report">
+            <div class="report-title">Itens zerados</div>
+            <div class="report-desc">Lista produtos com estoque igual a 0.</div>
+            <button id="btnRelZerados">Gerar</button>
+          </div>
+        </div>
+
+        <div class="gridwrap" style="margin-top:12px;">
+          <table id="tblRel">
+            <thead>
+              <tr>
+                <th>SKU</th><th>Nome</th><th>Categoria</th><th>Estoque</th><th>Mín.</th><th>Preço</th><th>Local</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
     </section>
 
   </main>
