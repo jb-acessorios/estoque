@@ -8,6 +8,7 @@
 // 1) Cadastro protegido: só cria NOVO após clicar em "Novo"
 // 2) Movimentações: seleção por LISTA (select) usando ID
 // 3) Excluir no ESTOQUE + linha selecionada destacada
+// 4) Mini dashboard (Peças/Unidades/Custo/Venda/Em falta) com valores
 // ==========================================
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzFZIQL0MJCcQcCAqOayNuGIi00N1TqHt8yJkib7Oe6pTbJu3lduNnmc8itWsszcuQ/exec";
@@ -47,22 +48,31 @@ function setStatus(ok, text) {
   el.style.borderColor = ok ? "rgba(27,94,32,.35)" : "rgba(20,24,35,.12)";
 }
 
-function money(v){
-  const n = Number(String(v ?? "").replace(",", "."));
-  if (isNaN(n)) return "";
-  return n.toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
-}
-
+// ✅ número BR bem tolerante: "R$ 1.234,56" -> 1234.56
 function toNumBR(v){
-  const s = String(v ?? "").trim();
-  if (!s) return 0;
-  // converte "1.234,56" -> "1234.56"
-  const n = Number(s.replace(/\./g, "").replace(",", "."));
+  if (v === null || v === undefined) return 0;
+  if (typeof v === "number") return isFinite(v) ? v : 0;
+
+  const s0 = String(v).trim();
+  if (!s0) return 0;
+
+  const clean = s0
+    .replace(/[R$\s]/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const n = Number(clean);
   return isNaN(n) ? 0 : n;
 }
 
+// ✅ money usando toNumBR (resolve os casos com ponto/vírgula/R$)
+function money(v){
+  const n = toNumBR(v);
+  return n.toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+}
+
+// ===================== MINI DASH =====================
 function renderMiniDash(list){
-  // list = a mesma lista que você está renderizando na tabela (com filtros etc)
   const items = Array.isArray(list) ? list : [];
 
   const pecas = items.length;
@@ -161,7 +171,7 @@ function setView(view) {
   if (t) t.textContent = titles[view] || "Sistema";
 
   if (TOKEN) {
-    if (view === "estoque") renderProducts(PRODUCTS);
+    if (view === "estoque") renderProducts(PRODUCTS); // ✅ já atualiza dash lá dentro
     if (view === "relatorios") renderRel([]);
     if (view === "movimentacoes") refreshMovePicker();
   }
@@ -215,12 +225,10 @@ function renderProducts(list) {
   const tb = table.querySelector("tbody");
   tb.innerHTML = "";
 
-  // mantém referência da seleção atual, para re-marcar após render
   const currentSelectedId = selectedId;
-
   selectedRowEl = null;
 
-  list.forEach(p => {
+  (list || []).forEach(p => {
     const tr = document.createElement("tr");
 
     const est = Number(p.estoque || 0);
@@ -248,7 +256,6 @@ function renderProducts(list) {
       <td>${p.ativo ?? ""}</td>
     `;
 
-    // ✅ se já tem seleção e bate o ID, marca ao renderizar (ex: após refresh)
     if (currentSelectedId && id === currentSelectedId) {
       tr.classList.add("selected");
       selectedRowEl = tr;
@@ -273,12 +280,14 @@ function renderProducts(list) {
     tb.appendChild(tr);
   });
 
-  // se perdeu seleção (excluiu, ou item não existe mais)
   if (selectedId && !selectedRowEl) {
     clearSelectionUI();
   } else {
     setDeleteButtonsState();
   }
+
+  // ✅ AQUI ESTÁ A CORREÇÃO PRINCIPAL: atualizar o mini-dashboard
+  renderMiniDash(list);
 }
 
 // ===================== FILTROS =====================
@@ -293,7 +302,7 @@ function applyFilters() {
   if (fnome) list = list.filter(p => norm(p.nome).includes(fnome));
   if (fcat)  list = list.filter(p => norm(p.categoria).includes(fcat));
 
-  renderProducts(list);
+  renderProducts(list); // ✅ dash acompanha os filtros
 }
 
 function clearFilters() {
@@ -301,7 +310,7 @@ function clearFilters() {
   if ($("f_sku")) $("f_sku").value = "";
   if ($("f_nome")) $("f_nome").value = "";
   if ($("f_categoria")) $("f_categoria").value = "";
-  renderProducts(PRODUCTS);
+  renderProducts(PRODUCTS); // ✅ dash volta ao total
 }
 
 // ===================== MOVIMENTAÇÕES: SELECT POR ID =====================
@@ -346,7 +355,7 @@ function renderMoves(list) {
   const tb = table.querySelector("tbody");
   tb.innerHTML = "";
 
-  list.forEach(m => {
+  (list || []).forEach(m => {
     const tr = document.createElement("tr");
     const id = m.id || "";
     const peca = m.peca || m.sku || "";
@@ -412,7 +421,6 @@ async function saveProduct(){
 
   const pecaValue = up(($("p_sku")?.value) || "");
   const idValue = String($("p_id")?.value || "").trim();
-
   const finalId = (CAD_MODE === "NEW") ? "" : idValue;
 
   const product = {
@@ -542,7 +550,7 @@ function renderRel(list){
   const tb = table.querySelector("tbody");
   tb.innerHTML = "";
 
-  list.forEach(p => {
+  (list || []).forEach(p => {
     const peca = (p.peca ?? p.sku ?? "");
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -583,10 +591,13 @@ async function loadProducts(){
   const r = await apiGet("listProducts");
   if (!r.ok) throw new Error(r.error);
 
-  // ✅ filtra inativos aqui
   PRODUCTS = (r.products || []).filter(p => up(p.ativo ?? "SIM") !== "NAO");
 
   renderProducts(PRODUCTS);
+
+  // ✅ backup extra: se por algum motivo o renderProducts não rodar, o dash ainda atualiza
+  renderMiniDash(PRODUCTS);
+
   refreshMovePicker();
 }
 
@@ -696,7 +707,6 @@ function wireActions(){
     renderProducts(PRODUCTS);
   });
 
-  // ✅ botão EXCLUIR no estoque
   $("btnExcluirEstoque")?.addEventListener("click", async () => {
     if (!TOKEN) return;
     try { await deleteSelectedFromEstoque(); } catch(e){ alert(e.message || String(e)); }
@@ -720,7 +730,6 @@ function wireActions(){
     startNewProduct();
   });
 
-  // (opcional) excluir no cadastro também
   $("btnExcluirProduto")?.addEventListener("click", async () => {
     if (!TOKEN) return;
     try { await deleteFromCadastro(); } catch(e){ alert(e.message || String(e)); }
